@@ -1,45 +1,8 @@
 "use client";
 import React, { useState } from "react";
+import { faqs } from "@/data/faqs";
 
 const Faqs = () => {
-  const faqs = [
-    {
-      question: "What is Tech It Easy?",
-      answer:
-        "Tech It Easy is a 24-hour hackathon focused on building full-stack agentic AI applications. It's an opportunity for developers, designers, and AI enthusiasts to come together and create innovative solutions using the latest AI technologies.",
-    },
-    {
-      question: "Who can participate?",
-      answer:
-        "Tech It Easy is open to anyone interested in AI and technology, regardless of skill level. Whether you're a seasoned developer or a beginner, you can join a team and contribute to building an exciting AI application.",
-    },
-    {
-      question: "When and where is the event?",
-      answer:
-        "Tech It Easy will take place on April 29-30, 2026, at the AMC in Bangalore. It's a weekend filled with coding, collaboration, and fun!",
-    },
-    {
-      question: "What kind of projects can we build?",
-      answer:
-        "Participants are encouraged to build full-stack agentic AI applications. This could include anything from AI-powered chatbots and virtual assistants to innovative tools that leverage machine learning and natural language processing.",
-    },
-    {
-      question: "Are there any prizes?",
-      answer:
-        "Yes! There are over $1000 worth of prizes available for the best projects. It's a great opportunity to showcase your skills and win exciting rewards.",
-    },
-    {
-      question: "Is there a registration fee?",
-      answer:
-        "No, Tech It Easy is completely free to attend. We want to make it accessible for everyone who wants to participate and build amazing AI applications.",
-    },
-    {
-      question: "Will there be mentors available?",
-      answer:
-        "Yes, we will have experienced mentors available throughout the event to provide guidance and support to all teams. Whether you need help with technical challenges or want feedback on your project, our mentors are here to assist you.",
-    },
-  ];
-
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (index: number) => {
@@ -47,51 +10,82 @@ const Faqs = () => {
   };
 
   return (
-    <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 sm:px-6 py-12">
-      <h2 className="text-3xl font-bold text-left mb-12">Got Questions?</h2>
+    <section className="relative w-full min-h-screen py-[120px] flex flex-col justify-center">
+      <div className="absolute inset-0 bg-[#00040a]/80 z-0 pointer-events-none backdrop-blur-[4px]" />
 
-      <div className="space-y-4 max-w-3xl md:max-w-5xl mx-auto">
-        {faqs.map((faq, index) => {
-          const isOpen = openIndex === index;
+      <div className="relative z-10 w-full max-w-[1200px] mx-auto px-[24px]">
+        <h2 className="font-['Impact',sans-serif] font-black text-[56px] md:text-[96px] tracking-[0.08em] leading-none text-white drop-shadow-[0_0_30px_rgba(38,102,220,0.5)] uppercase mb-[64px] text-center">
+          FAQ
+          <span
+            className="text-transparent"
+            style={{ WebkitTextStroke: "2px #2666dcff" }}
+          >
+            S
+          </span>
+        </h2>
 
-          return (
-            <div
-              key={index}
-              className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl transition duration-300 overflow-hidden"
-            >
-              {/* Header */}
-              <button
-                onClick={() => toggle(index)}
-                className="w-full flex items-center justify-between px-6 py-4 text-left font-semibold text-white"
-              >
-                {faq.question}
+        <div className="flex flex-col-reverse lg:flex-row gap-20 md:gap-[200px] items-center lg:items-start w-full">
+          <div className="w-full lg:w-[35%] flex justify-center items-center relative">
+            <div className="absolute inset-0 bg-[#2666dc]/20 blur-[80px] rounded-full pointer-events-none" />
+            <img
+              src="/assets/captianamerica.svg"
+              alt="Captain America"
+              className="w-[280px] md:w-[400px] lg:w-[100%] max-w-[500px] object-contain relative z-10 animate-[float_6s_ease-in-out_infinite] drop-shadow-[0_0_40px_rgba(38,102,220,0.5)]"
+            />
+          </div>
 
-                <span
-                  className={`text-orange-400 text-xl transition-transform duration-300 ${
-                    isOpen ? "rotate-45" : ""
+          <div className="w-full lg:w-[55%] flex flex-col gap-[16px]">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+
+              return (
+                <div
+                  key={index}
+                  className={`rounded-xl border transition-all duration-300 shadow-[0_4px_30px_rgba(38,102,220,0.1)] overflow-hidden ${
+                    isOpen
+                      ? "bg-[#000a14]/90 border-blue-600/50 backdrop-blur-xl"
+                      : "bg-[#00040a]/60 border-blue-900/30 backdrop-blur-md hover:bg-[#000a14]/70 hover:border-blue-600/30"
                   }`}
                 >
-                  +
-                </span>
-              </button>
+                  <button
+                    onClick={() => toggle(index)}
+                    className="w-full flex items-center justify-between px-[24px] py-[14px] text-left text-white"
+                  >
+                    <span
+                      className={`font-bold tracking-wide transition-colors duration-300 text-[16px] md:text-[18px] ${isOpen ? "text-blue-400" : "text-white/90"}`}
+                    >
+                      {faq.question}
+                    </span>
 
-              {/* Animated Content */}
-              <div
-                className={`grid transition-all duration-300 ${
-                  isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                }`}
-              >
-                <div className="overflow-hidden">
-                  <div className="px-6 py-4 text-neutral-300 border-t border-white/10">
-                    {faq.answer}
+                    <span
+                      className={`text-blue-600 text-[28px] font-black transition-transform duration-500 ease-[cubic-bezier(0.87,0,0.13,1)] ${
+                        isOpen ? "rotate-[135deg] text-blue-500" : ""
+                      }`}
+                    >
+                      +
+                    </span>
+                  </button>
+
+                  <div
+                    className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                      isOpen
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="px-[24px] pb-[28px] text-blue-100/60 text-[14px] md:text-[16px] leading-relaxed mx-[8px] md:mx-[16px] font-medium border-t border-blue-900/20 pt-[20px]">
+                        {faq.answer}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,74 +1,114 @@
 "use client";
 import React from "react";
-import Countdown from "./ui/CountDown";
+import IronManCountdown from "./ui/CountDown";
+import Button from "./ui/Button";
 
 const Hero = () => {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-[#0b0b0f] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,115,0,0.25),transparent_40%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(0,180,255,0.15),transparent_40%)]" />
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0000] text-white pt-[15vh] pb-24 md:pt-0 md:pb-0">
+      {/* BACKGROUND GRADIENTS */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1b0303] via-[#0a0000] to-black z-0" />
 
-      <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay noise" />
+      {/* VIGNETTE */}
+      <div
+        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#000_100%)] z-0"
+        opacity-90
+      ></div>
 
-      <div className="absolute inset-0">
-        <span className="hex-outline slow top-20 left-20"></span>
-        <span className="hex-outline mid top-1/3 right-32"></span>
-        <span className="hex-outline fast bottom-24 left-1/4"></span>
-        <span className="circle-outline slow bottom-20 right-20"></span>
-        <span className="plus mid top-1/4 left-1/2"></span>
+      {/* TECH GRID OVERLAY */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(220,38,38,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(220,38,38,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] z-0 pointer-events-none" />
+
+      {/* RED BACKLIGHTING */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[800px] md:h-[800px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+      {/* MAIN CONTENT CENTER */}
+      <div className="relative z-10 flex flex-col items-center text-center px-4 w-full max-w-[1400px] transition-all">
+        {/* TITLE & IRONMAN WRAPPER */}
+        <div className="relative w-full flex items-center justify-center mt-4">
+          {/* LUMORA BACKGROUND TITLE */}
+          <h1
+            className="
+            absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2
+            font-['Impact',sans-serif] font-black
+            text-[68px] md:text-[224px] 
+            tracking-[0.1em] text-white select-none
+            opacity-80 drop-shadow-[0_0_50px_rgba(220,0,0,0.4)]
+            uppercase leading-none z-10
+            w-full text-center
+          "
+          >
+            Lumora
+          </h1>
+
+          {/* IRONMAN IMAGE (Dictates container height naturally) */}
+          <div
+            className="relative z-20 w-[280px] sm:w-[500px] lg:w-[600px] mt-[10%] md:mt-[8%]"
+            style={{ animation: "float 6s ease-in-out infinite" }}
+          >
+            <img
+              src="/assets/ironman.svg"
+              alt="Ironman"
+              className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(220,0,0,0.6)]"
+            />
+          </div>
+        </div>
+
+        {/* DETAILS SECTION */}
+        <div className="relative z-30 flex flex-col items-center mt-6 md:mt-12">
+          {/* TAGLINE */}
+          <div className="text-[14px] sm:text-[16px] md:text-[24px] font-bold tracking-[0.2em] md:tracking-[0.3em] text-white/90 uppercase mb-6  text-center">
+            Build the future.{" "}
+            <span className="text-red-500 drop-shadow-[0_0_15px_rgba(220,0,0,0.8)]">
+              Become the hero.
+            </span>
+          </div>
+
+          <div className="text-[14px] md:text-[20px] font-bold  tracking-[0.4em] text-red-300/90 uppercase drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] mb-3">
+            24H Hackathon
+          </div>
+
+          <div className="text-[12px] md:text-[18px]  tracking-[0.3em] text-red-100/60 uppercase mb-10">
+            April 29–30, 2026
+          </div>
+
+          {/* BUTTON */}
+          <Button text="Register Now" />
+        </div>
       </div>
 
-      <div className="relative z-10 text-center max-w-3xl px-6">
-        <h1 className="text-5xl font-extrabold tracking-tight">
-          <span className="text-orange-500">Tech </span> It{" "}
-          <span className="text-orange-500">Easy</span>
-        </h1>
-
-        <p className="mt-6 text-xl text-gray-300">
-          Turn your full-stack agentic AI app idea into reality in 24 hours.
-        </p>
-
-        <p
-          className="mt-4 text-sm text-gray-400 uppercase font-semibold"
-          style={{ letterSpacing: "1px" }}
+      <div
+        className="
+        relative md:absolute z-30 
+        w-full md:w-auto flex justify-center 
+        mt-16 md:mt-0 
+        md:right-[2%] lg:right-[4%] xl:right-[8%] 
+        md:top-[60%] md:-translate-y-1/2
+        px-4 md:px-0
+      "
+      >
+        <div
+          className="
+          relative bg-[#08000a]/80 backdrop-blur-xl 
+          border border-red-600/10 rounded-xl p-2 sm:p-2 
+          
+          w-full max-w-[400px] md:w-auto
+        "
         >
-          AMC | Bangalore | APRIL 29-30, 2026
-        </p>
+          {/* Inner Glow */}
+          <div className="absolute inset-0 bg-red-600/10 blur-3xl rounded-xl pointer-events-none" />
 
-        <div className="mx-auto w-fit">
-          <Countdown targetDate="2026-04-29T09:00:00" />
+          <div className="relative z-10">
+            <IronManCountdown targetDate="2026-04-29T10:00:00" />
+          </div>
         </div>
-
-        <div className="mt-10 flex justify-center items-center mx-auto gap-6 flex-col md:flex-row">
-          <button
-            className="w-fit bg-orange-500 text-neutral-100 font-semibold tracking-wide transition hover:bg-orange-600"
-            style={{
-              clipPath: "polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%)",
-              padding: "8px 32px",
-            }}
-          >
-            REGISTER NOW →
-          </button>
-
-          <button
-            className="w-fit text-neutral-200 font-semibold tracking-wide transition hover:text-orange-400"
-            style={{
-              clipPath: "polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%)",
-              padding: "8px 32px",
-              border: "1px solid rgba(156,163,175,0.4)",
-            }}
-          >
-            MISSION BRIEFING
-          </button>
-        </div>
-        <p className="mt-10 text-sm text-gray-400 tracking-widest uppercase">
-          No Fee <span className="text-orange-500">•</span> $1000+ PRIZES{" "}
-          <span className="text-orange-500">•</span> MENTORS{" "}
-        </p>
       </div>
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-gray-500 animate-bounce">
-        <p>Scroll</p>
-      </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
+      `}</style>
     </section>
   );
 };

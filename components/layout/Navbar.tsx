@@ -1,5 +1,8 @@
 "use client";
 import React, { useState } from "react";
+import Button from "../ui/Button";
+import Switch from "../ui/Switch";
+import Link from "next/link";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -11,59 +14,86 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 mt-4 mx-4 border border-neutral-950/10 rounded-xl">
-      <div className="mx-auto bg-black md:px-6 px-6 py-4 max-w-5xl border border-neutral-800 rounded-xl flex justify-between items-center text-white">
-        <h1
-          className="text-xl font-bold text-neutral-200"
-          style={{ letterSpacing: "0px" }}
-        >
-          <span className="text-orange-500">Tech</span>It
-          <span className="text-orange-500">Easy</span>
-        </h1>
+    <>
+      <nav className="fixed top-0 left-0 w-full z-[1000] pointer-events-none">
+        <div className="w-full bg-[#08000a]/60 backdrop-blur-xl border-b border-red-900/30 px-6 md:px-12 py-4 flex justify-between items-center shadow-[0_4px_30px_rgba(220,0,0,0.1)] pointer-events-auto transition-all">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="pointer-events-auto group">
+              <h1 className="text-2xl font-black font-['Impact',sans-serif] tracking-widest text-white drop-shadow-[0_0_15px_rgba(220,0,0,0.5)] group-hover:text-red-400 transition-colors">
+                Lumora
+              </h1>
+            </Link>
+          </div>
 
-        <ul className="hidden md:flex gap-6 text-neutral-500">
-          {items.map((item) => (
-            <li key={item.name}>
-              <a
-                href={item.href}
-                className="hover:text-orange-500 transition uppercase font-medium text-sm duration-300"
-                style={{ letterSpacing: "1px" }}
-              >
-                / / {item.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-
-        <button className=" text-sm uppercase font-bold bg-orange-500 text-white px-4 py-1 rounded-xl hover:bg-orange-600 transition">
-          Register Now
-        </button>
-
-        <button
-          className="md:hidden text-xl text-neutral-500"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? "✕" : "☰"}
-        </button>
-      </div>
-
-      {open && (
-        <div className="md:hidden mt-2 bg-black/70 rounded-2xl border  backdrop-blur-2xl border-neutral-800 px-6 py-4 text-white">
-          <ul className="flex flex-col gap-4">
+          <ul className="hidden md:flex gap-10 items-center text-red-100/70">
             {items.map((item) => (
               <li key={item.name}>
                 <a
                   href={item.href}
-                  className="hover:text-orange-500 transition"
+                  className="hover:text-red-500 hover:drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] transition-all text-xs font-bold tracking-[0.2em] uppercase"
                 >
                   {item.name}
                 </a>
               </li>
             ))}
           </ul>
+
+          <div className="hidden md:block scale-90 origin-right">
+            <Button text="Register" href="#" />
+          </div>
+
+          <div className="md:hidden flex justify-end">
+            <Switch checked={open} onChange={setOpen} />
+          </div>
         </div>
-      )}
-    </nav>
+      </nav>
+
+      <div
+        className={`fixed inset-0 z-[999] transition-all duration-500 ${
+          open ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+      >
+        <div
+          className="absolute inset-0 bg-black/80 backdrop-blur-md"
+          onClick={() => setOpen(false)}
+        />
+
+        <div
+          className={`absolute top-0 right-0 h-full w-[100%] max-w-sm bg-[#0a0000] border-l border-red-900/40 shadow-[-10px_0_40px_rgba(220,0,0,0.15)] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+            open ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="relative h-full flex flex-col px-6 text-white pt-24 text-left">
+            <ul className="flex flex-col w-full gap-8 text-2xl font-bold tracking-widest uppercase">
+              {items.map((item) => (
+                <li
+                  key={item.name}
+                  className="w-full border-b border-red-900/30 pb-6"
+                >
+                  <a
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="flex justify-between items-center group hover:text-red-500 hover:drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] transition-all w-full text-red-100/90"
+                  >
+                    <span>{item.name}</span>
+                    <span className="text-2xl text-red-900/50 group-hover:text-red-500 group-hover:translate-x-2 transition-all">
+                      →
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            <div
+              className="mt-12 flex justify-center"
+              onClick={() => setOpen(false)}
+            >
+              <Button text="Register" href="#" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
