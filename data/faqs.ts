@@ -1,18 +1,18 @@
 export const faqs = [
     {
-      question: "What is Lumora?",
+      question: "What is Supernova?",
       answer:
-        "Lumora is a 24-hour hackathon focused on building full-stack agentic AI applications. It's an opportunity for developers, designers, and AI enthusiasts to come together and create innovative solutions using the latest AI technologies.",
+        "Supernova is a 24-hour hackathon focused on building full-stack agentic AI applications. It's an opportunity for developers, designers, and AI enthusiasts to come together and create innovative solutions using the latest AI technologies.",
     },
     {
       question: "Who can participate?",
       answer:
-        "Lumora is open to anyone interested in AI and technology, regardless of skill level. Whether you're a seasoned developer or a beginner, you can join a team and contribute to building an exciting AI application.",
+        "Supernova is open to anyone interested in AI and technology, regardless of skill level. Whether you're a seasoned developer or a beginner, you can join a team and contribute to building an exciting AI application.",
     },
     {
       question: "When and where is the event?",
       answer:
-        "Lumora will take place on April 29-30, 2026, at the AMC in Bangalore. It's a weekend filled with coding, collaboration, and fun!",
+        "Supernova will take place on April 29-30, 2026, at the AMC in Bangalore. It's a weekend filled with coding, collaboration, and fun!",
     },
     {
       question: "What kind of projects can we build?",

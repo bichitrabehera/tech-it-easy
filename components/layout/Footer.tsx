@@ -1,112 +1,126 @@
 "use client";
 import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+
+const quickLinks = [
+  { label: "About", id: "about" },
+  { label: "Domains", id: "domains" },
+  { label: "FAQs", id: "faqs" },
+];
+
+const policyLinks = [
+  { label: "Code of Conduct", href: "#" },
+  { label: "Privacy", href: "#" },
+  { label: "Terms", href: "#" },
+];
 
 const Footer = () => {
+  const handleScroll = (id: string) => {
+    const section = document.getElementById(id);
+    if (section) section.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <footer className="relative border-t border-cyan-900/40 bg-[#010614] backdrop-blur-xl min-h-[100vh] flex flex-col justify-end">
-      {/* Intense Center Backlight behind Thor
-      <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15),transparent_60%)] blur-[60px] pointer-events-none z-0" /> */}
+    <footer className="relative border-t border-red-900/40 bg-[#080202] overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_75%_15%,rgba(220,38,38,0.2),transparent_42%),radial-gradient(circle_at_25%_85%,rgba(220,38,38,0.08),transparent_35%)]" />
+      <div className="absolute inset-0 pointer-events-none z-0 bg-[linear-gradient(rgba(220,38,38,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(220,38,38,0.05)_1px,transparent_1px)] bg-[size:52px_52px] opacity-20" />
 
-      {/* Centerpiece: Massive Thor (Uncapped to break out of top) */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-40 lg:opacity-100 flex justify-center items-end pb-[40px]">
-        <img
-          src="/assets/thorbg.png"
-          alt="Thor Centerpiece"
-          className="h-[90%] md:h-[80%] object-contain object-bottom  drop-shadow-[0_0_60px_rgba(6,182,212,0.6)]"
-        />
-      </div>
-
-      {/* Main Content Container */}
-      <div className="w-full max-w-[1400px] mx-auto px-[24px] pt-[80px] pb-[40px] relative z-10 flex flex-col justify-between flex-grow">
-        {/* Top Split: Left Branding & Right Links */}
-        <div className="flex flex-col lg:flex-row justify-between items-start gap-[64px] w-full">
-          {/* LEFT: Branding */}
-          <div className="w-full lg:w-[400px]">
-            <h2 className="text-[40px] md:text-[64px] font-black font-['Impact',sans-serif] tracking-widest text-[#e2f8ff] uppercase  leading-none text-center lg:text-left">
-              LUMORA
-            </h2>
-            <p className="mt-[24px] text-cyan-100/70 text-[14px] md:text-[16px] leading-[1.8] font-medium drop-shadow-[0_0_10px_rgba(6,182,212,0.4)] text-center lg:text-left">
-              Build the future. Become the hero. Harness the lightning and
-              innovate alongside the brightest minds at the ultimate 2026
-              Hackathon.
-            </p>
-          </div>
-
-          {/* RIGHT: Links Grid */}
-          <div className="w-full lg:w-[500px] grid grid-cols-2 sm:grid-cols-3 gap-[40px] md:gap-[60px] text-[15px] relative z-20 text-center sm:text-left">
+      <div className="relative z-10 w-full max-w-[1300px] mx-auto px-6 py-16 md:py-20">
+        <div className="relative overflow-hidden rounded-3xl border border-red-600/35 bg-[#0f0606]/90 px-6 py-8 md:px-10 md:py-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(220,38,38,0.25),transparent_50%)] pointer-events-none" />
+          <div className="relative grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-center">
             <div>
-              <h3 className="text-cyan-50 font-black tracking-[0.2em] uppercase mb-[24px] drop-shadow-[0_0_15px_rgba(6,182,212,0.8)] text-[14px]">
-                Explore
-              </h3>
-              <ul className="flex flex-col gap-[16px] text-cyan-200/50 font-bold tracking-wide">
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  About
-                </li>
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  Prizes
-                </li>
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  Sponsors
-                </li>
-              </ul>
+              <p className="text-red-300 text-[11px] md:text-xs uppercase tracking-[0.35em] font-semibold mb-4">
+                Final Transmission
+              </p>
+              <h2 className="font-[Boldonse] text-[30px] md:text-[44px] leading-tight text-[#ffe2e2] uppercase">
+                Ready To Build Something Heroic?
+              </h2>
+              <p className="mt-4 text-red-100/70 max-w-[60ch]">
+                One day. Infinite grit. Bring your squad, pick a domain, and
+                launch something unforgettable.
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-3">
+                <button className="px-6 py-2.5 rounded-full bg-red-600 text-white text-sm font-semibold tracking-wide hover:bg-red-500 transition-colors">
+                  Register Your Team
+                </button>
+                <button
+                  onClick={() => handleScroll("domains")}
+                  className="px-6 py-2.5 rounded-full border border-red-500/50 text-red-200 text-sm font-semibold tracking-wide hover:bg-red-500/15 transition-colors"
+                >
+                  Explore Domains
+                </button>
+              </div>
             </div>
 
-            <div>
-              <h3 className="text-cyan-50 font-black tracking-[0.2em] uppercase mb-[24px] drop-shadow-[0_0_15px_rgba(6,182,212,0.8)] text-[14px]">
-                Resources
-              </h3>
-              <ul className="flex flex-col gap-[16px] text-cyan-200/50 font-bold tracking-wide">
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  FAQs
-                </li>
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  Rules
-                </li>
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  Discord
-                </li>
-              </ul>
-            </div>
-
-            <div className="col-span-2 sm:col-span-1">
-              <h3 className="text-cyan-50 font-black tracking-[0.2em] uppercase mb-[24px] drop-shadow-[0_0_15px_rgba(6,182,212,0.8)] text-[14px]">
-                Social
-              </h3>
-              <ul className="flex flex-col sm:items-start items-center gap-[16px] text-cyan-200/50 font-bold tracking-wide">
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  Twitter
-                </li>
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  LinkedIn
-                </li>
-                <li className="hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer">
-                  GitHub
-                </li>
-              </ul>
+            <div className="relative flex justify-center lg:justify-end">
+              <Image
+                src="/assets/deadpool.svg"
+                alt="Deadpool"
+                width={300}
+                height={300}
+                className="w-[190px] sm:w-[230px] md:w-[580px] h-auto object-contain relative z-10 drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]"
+              />
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar Container */}
-        <div className="mt-auto pt-[64px]">
-          {/* Electric Divider */}
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent drop-shadow-[0_0_10px_rgba(6,182,212,0.8)] mb-[32px]" />
-
-          {/* Legal / Copyright */}
-          <div className="flex flex-col md:flex-row justify-between items-center text-cyan-200/40 text-[12px] md:text-[14px] font-bold tracking-[0.2em] gap-[24px] relative z-20">
-            <p className="uppercase text-center text-cyan-300/60 drop-shadow-[0_0_10px_rgba(6,182,212,0.4)]">
-              © 2026 Lumora. The Hackathon of the Gods.
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
+          <div>
+            <h3 className="text-[#ffe2e2] uppercase text-sm tracking-[0.22em] mb-3">
+              Supernova
+            </h3>
+            <p className="text-red-100/65 max-w-[34ch] mx-auto md:mx-0 leading-relaxed">
+              A 24-hour hackathon where ideas collide with execution.
+              Build fast, think bold, and ship with impact.
             </p>
-
-            <div className="flex gap-[32px] md:gap-[48px]">
-              <span className="hover:text-cyan-400 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer uppercase">
-                Privacy
-              </span>
-              <span className="hover:text-cyan-400 hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] transition-all cursor-pointer uppercase">
-                Terms
-              </span>
-            </div>
           </div>
+
+          <div>
+            <h3 className="text-[#ffe2e2] uppercase text-sm tracking-[0.22em] mb-3">
+              Quick Links
+            </h3>
+            <ul className="space-y-2 text-red-100/70">
+              {quickLinks.map((item) => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => handleScroll(item.id)}
+                    className="hover:text-red-300 transition-colors"
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-[#ffe2e2] uppercase text-sm tracking-[0.22em] mb-3">
+              Essentials
+            </h3>
+            <ul className="space-y-2 text-red-100/70">
+              {policyLinks.map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} className="hover:text-red-300 transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-12 h-px bg-gradient-to-r from-transparent via-red-500/60 to-transparent" />
+
+        <div className="mt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-red-100/50 text-xs md:text-sm">
+          <p className="uppercase tracking-wider text-center">
+            © 2026 Supernova. Maximum Effort.
+          </p>
+          <p className="tracking-[0.2em] uppercase text-[10px] md:text-xs text-red-300/70">
+            Build • Break • Rebuild
+          </p>
         </div>
       </div>
     </footer>

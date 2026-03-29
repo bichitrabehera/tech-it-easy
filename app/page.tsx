@@ -5,7 +5,7 @@ import Hero from "@/components/Hero";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 
-import { ReactLenis } from "lenis/react";
+import { ReactLenis, type LenisRef } from "lenis/react";
 import { useRef, useEffect } from "react";
 
 import gsap from "gsap";
@@ -14,7 +14,7 @@ import About from "@/components/About";
 import Domains from "@/components/Domains";
 
 const Home = () => {
-  const lenisRef = useRef<any>(null);
+  const lenisRef = useRef<LenisRef | null>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -26,20 +26,22 @@ const Home = () => {
     // 🔥 Sync Lenis with GSAP
     lenis.on("scroll", ScrollTrigger.update);
 
-    gsap.ticker.add((time) => {
+    const onTick = (time: number) => {
       lenis.raf(time * 1000);
-    });
+    };
+
+    gsap.ticker.add(onTick);
 
     gsap.ticker.lagSmoothing(0);
 
     return () => {
-      gsap.ticker.remove(lenis.raf);
+      gsap.ticker.remove(onTick);
     };
   }, []);
 
   return (
    <div className="">
-     {/* <ReactLenis
+     <ReactLenis
       ref={lenisRef}
       root
       options={{
@@ -47,14 +49,14 @@ const Home = () => {
         duration: 1.2,
         smoothWheel: true,
       }}
-    > */}
+    >
       <Navbar />
       <Hero />
       <About />
       <Domains/>
       <Faqs />
       <Footer />
-    {/* </ReactLenis> */}
+    </ReactLenis>
    </div>
   );
 };

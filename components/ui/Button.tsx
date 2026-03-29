@@ -15,62 +15,62 @@ interface ButtonProps {
   accentColor?: string;
 }
 
-const ArcIcon = () => (
-  <svg
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-  >
-    <circle
-      cx="8"
-      cy="8"
-      r="7"
-      stroke="currentColor"
-      strokeWidth="1"
-      opacity="0.5"
-    />
-    <circle cx="8" cy="8" r="4" fill="currentColor" opacity="0.15" />
-    <circle cx="8" cy="8" r="2" fill="currentColor" opacity="0.9" />
-    <line
-      x1="8"
-      y1="1"
-      x2="8"
-      y2="4"
-      stroke="currentColor"
-      strokeWidth="1"
-      opacity="0.7"
-    />
-    <line
-      x1="8"
-      y1="12"
-      x2="8"
-      y2="15"
-      stroke="currentColor"
-      strokeWidth="1"
-      opacity="0.7"
-    />
-    <line
-      x1="1"
-      y1="8"
-      x2="4"
-      y2="8"
-      stroke="currentColor"
-      strokeWidth="1"
-      opacity="0.7"
-    />
-    <line
-      x1="12"
-      y1="8"
-      x2="15"
-      y2="8"
-      stroke="currentColor"
-      strokeWidth="1"
-      opacity="0.7"
-    />
-  </svg>
-);
+// const ArcIcon = () => (
+//   <svg
+//     viewBox="0 0 16 16"
+//     fill="none"
+//     xmlns="http://www.w3.org/2000/svg"
+//     width="16"
+//     height="16"
+//   >
+//     <circle
+//       cx="8"
+//       cy="8"
+//       r="7"
+//       stroke="currentColor"
+//       strokeWidth="1"
+//       opacity="0.5"
+//     />
+//     <circle cx="8" cy="8" r="4" fill="currentColor" opacity="0.15" />
+//     <circle cx="8" cy="8" r="2" fill="currentColor" opacity="0.9" />
+//     <line
+//       x1="8"
+//       y1="1"
+//       x2="8"
+//       y2="4"
+//       stroke="currentColor"
+//       strokeWidth="1"
+//       opacity="0.7"
+//     />
+//     <line
+//       x1="8"
+//       y1="12"
+//       x2="8"
+//       y2="15"
+//       stroke="currentColor"
+//       strokeWidth="1"
+//       opacity="0.7"
+//     />
+//     <line
+//       x1="1"
+//       y1="8"
+//       x2="4"
+//       y2="8"
+//       stroke="currentColor"
+//       strokeWidth="1"
+//       opacity="0.7"
+//     />
+//     <line
+//       x1="12"
+//       y1="8"
+//       x2="15"
+//       y2="8"
+//       stroke="currentColor"
+//       strokeWidth="1"
+//       opacity="0.7"
+//     />
+//   </svg>
+// );
 
 const Button = ({
   text = "Launch",
@@ -94,7 +94,7 @@ const Button = ({
       <div className="im-inner">
         {showIcon && (
           <span className="im-icon">
-            <ArcIcon />
+            {/* <ArcIcon /> */}
           </span>
         )}
         <span className="im-text">{text}</span>

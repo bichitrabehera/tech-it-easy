@@ -1,8 +1,9 @@
 import React from "react";
+import Image from "next/image";
 
 export default function About() {
   return (
-    <section className="relative w-full min-h-[80vh] bg-[#08000a] overflow-hidden flex items-center justify-center py-[80px]">
+    <section id="about" className="relative w-full min-h-[80vh] bg-[#08000a] overflow-hidden flex items-center justify-center py-[80px]">
       {/* Seamless Transitions */}
       <div className="absolute top-0 inset-x-0 h-[160px] bg-gradient-to-b from-black to-transparent pointer-events-none z-0" />
       <div className="absolute bottom-0 inset-x-0 h-[160px] bg-gradient-to-t from-black to-transparent pointer-events-none z-0" />
@@ -15,11 +16,11 @@ export default function About() {
       <div className="relative z-10 w-full max-w-[1200px] mx-auto px-[24px] md:px-[48px] flex flex-col md:flex-row items-center justify-between gap-[64px]">
         {/* Left: About Text & Stats */}
         <div className="flex-1 max-w-[600px] flex flex-col items-center md:items-start text-center md:text-left">
-          <div className="inline-block text-[10px] md:text-[12px] font-bold tracking-[0.3em] uppercase text-red-300 border border-red-900 bg-red-900/20 px-[16px] py-[8px] rounded-full mb-[24px] shadow-[0_0_15px_rgba(220,0,0,0.3)]">
+          <div className="inline-block m text-[10px] md:text-[12px] font-bold tracking-[0.3em] uppercase text-red-300 border border-red-900 bg-red-900/20 px-[16px] py-[8px] rounded-full mb-[24px] shadow-[0_0_15px_rgba(220,0,0,0.3)]">
             The Battle Begins
           </div>
 
-          <h2 className="font-['Impact',sans-serif] font-black text-[68px] md:text-[110px] tracking-[0.08em] leading-none text-white drop-shadow-[0_0_30px_rgba(220,0,0,0.5)] uppercase mb-[32px]">
+          <h2 className="font-[Boldonse] mt-10 font-black text-[68px] md:text-76px] tracking-[0.08em] leading-none text-white drop-shadow-[0_0_30px_rgba(220,0,0,0.5)] uppercase mb-[32px]">
             ABOU
             <span
               className="text-transparent"
@@ -34,7 +35,7 @@ export default function About() {
               Lumora
             </strong>{" "}
             is where heroes are forged in a 24-hour crucible of code and
-            creativity. We don't just build software we build the future. No
+            creativity. We don&apos;t just build software we build the future. No
             safety nets. No half measures. Only the relentless pursuit of
             something incredible.
           </p>
@@ -73,10 +74,12 @@ export default function About() {
         {/* Right: SVG Image */}
         <div className="flex-1 w-full max-w-[500px] relative flex justify-center items-center">
           <div className="absolute inset-0 bg-red-600/10 blur-[80px] rounded-full pointer-events-none" />
-          <img
-            src="/assets/spiderman.svg"
+          <Image
+            src="/assets/spiderman1.svg"
             alt="Spiderman"
-            className="w-[280px] md:w-[480px] object-contain relative z-10 animate-[float_6s_ease-in-out_infinite] drop-shadow-[0_0_30px_rgba(220,0,0,0.4)]"
+            width={480}
+            height={480}
+            className="w-[280px] md:w-[480px] object-contain relative z-10 animate-[float_6s_ease-in-out_infinite]"
           />
         </div>
       </div>

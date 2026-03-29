@@ -8,10 +8,19 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
 
   const items = [
-    { name: "Home", href: "#" },
-    { name: "About", href: "#" },
-    { name: "Contact", href: "#" },
+    { name: "Home", id: "home" },
+    { name: "About", id: "about" },
+    { name: "Domains", id: "domains" },
+    { name: "FAQs", id: "faqs" },
   ];
+
+  const handleScroll = (id: string) => {
+    setOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <>
@@ -19,8 +28,8 @@ const Navbar = () => {
         <div className="w-full bg-[#08000a]/60 backdrop-blur-xl border-b border-red-900/30 px-6 md:px-12 py-4 flex justify-between items-center shadow-[0_4px_30px_rgba(220,0,0,0.1)] pointer-events-auto transition-all">
           <div className="flex items-center gap-3">
             <Link href="/" className="pointer-events-auto group">
-              <h1 className="text-2xl font-black font-['Impact',sans-serif] tracking-widest text-white drop-shadow-[0_0_15px_rgba(220,0,0,0.5)] group-hover:text-red-400 transition-colors">
-                Lumora
+              <h1 className="text-xl font-black font-[Boldonse] tracking-widest text-white group-hover:text-red-400 transition-colors">
+                Supernova
               </h1>
             </Link>
           </div>
@@ -28,12 +37,12 @@ const Navbar = () => {
           <ul className="hidden md:flex gap-10 items-center text-red-100/70">
             {items.map((item) => (
               <li key={item.name}>
-                <a
-                  href={item.href}
-                  className="hover:text-red-500 hover:drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] transition-all text-xs font-bold tracking-[0.2em] uppercase"
+                <button
+                  onClick={() => handleScroll(item.id)}
+                  className="hover:text-red-500 hover:drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] transition-all text-xs font-bold tracking-[0.2em] uppercase focus:outline-none"
                 >
                   {item.name}
-                </a>
+                </button>
               </li>
             ))}
           </ul>
@@ -70,16 +79,15 @@ const Navbar = () => {
                   key={item.name}
                   className="w-full border-b border-red-900/30 pb-6"
                 >
-                  <a
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="flex justify-between items-center group hover:text-red-500 hover:drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] transition-all w-full text-red-100/90"
+                  <button
+                    onClick={() => handleScroll(item.id)}
+                    className="flex justify-between items-center group hover:text-red-500 hover:drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] transition-all w-full text-red-100/90 text-left focus:outline-none"
                   >
                     <span>{item.name}</span>
                     <span className="text-2xl text-red-900/50 group-hover:text-red-500 group-hover:translate-x-2 transition-all">
                       →
                     </span>
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>

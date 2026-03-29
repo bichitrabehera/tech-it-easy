@@ -2,33 +2,28 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
+const calculateTimeLeft = (targetDate) => {
+  const difference = new Date(targetDate) - new Date();
+  if (difference <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  return {
+    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((difference / 1000 / 60) % 60),
+    seconds: Math.floor((difference / 1000) % 60),
+  };
+};
+
 const IronCountdown = ({
   targetDate,
   footer = " With great power comes great responsibility ",
   accentColor = "#f54242ff",
 }) => {
-  const [mounted, setMounted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetDate));
   const [flashSecs, setFlashSecs] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-
-    const calculateTimeLeft = () => {
-      const difference = new Date(targetDate) - new Date();
-      if (difference <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-      return {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      };
-    };
-
-    setTimeLeft(calculateTimeLeft());
-
     const timer = setInterval(() => {
-      const next = calculateTimeLeft();
+      const next = calculateTimeLeft(targetDate);
       setTimeLeft((prev) => {
         if (prev && prev.seconds !== next.seconds) {
           setFlashSecs(true);
@@ -41,7 +36,7 @@ const IronCountdown = ({
     return () => clearInterval(timer);
   }, [targetDate]);
 
-  if (!mounted || !timeLeft) return null;
+  if (!timeLeft) return null;
 
   const pad = (n) => String(n).padStart(2, "0");
   const units = [
