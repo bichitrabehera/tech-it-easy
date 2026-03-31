@@ -30,13 +30,13 @@ export const DOMAINS = [
 
 const Domains = () => {
   return (
-    <section id="domains" className="relative w-full min-h-screen py-[120px] bg-[#000501] flex flex-col items-center justify-center overflow-hidden">
+    <section id="domains" className="relative w-full py-30 bg-[#000501] flex flex-col items-center justify-center overflow-hidden">
 
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1),transparent_60%)] pointer-events-none z-0" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none z-0" />
 
       <div className="relative z-10 w-full max-w-[1200px] mx-auto px-[24px] mb-[80px]">
-        <h2 className="font-[Boldonse] font-black text-[56px] md:text-[76px] tracking-[0.08em] leading-none text-[#e2ffe7] drop-shadow-[0_0_30px_rgba(34,197,94,0.6)] uppercase text-center">
+        <h2 className="font-[Boldonse] font-black text-[56px] md:text-76px] tracking-[0.08em] leading-none text-[#e2ffe7] drop-shadow-[0_0_30px_rgba(34,197,94,0.6)] uppercase text-center">
           DOMAIN<span className="text-transparent" style={{ WebkitTextStroke: '2px #22c55e' }}>S</span>
         </h2>
       </div>

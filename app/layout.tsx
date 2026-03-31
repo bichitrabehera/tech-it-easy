@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Lumora",
-  description: "Build the future. Become the hero. Collaborate, innovate, and win big at Lumora 2026.",
+  title: "SuperNova",
+  description: "Build the future. Become the hero. Collaborate, innovate, and win big at SuperNova 2026.",
 };
 
 export default function RootLayout({

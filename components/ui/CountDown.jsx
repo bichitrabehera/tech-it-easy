@@ -18,11 +18,11 @@ const IronCountdown = ({
   footer = " With great power comes great responsibility ",
   accentColor = "#f54242ff",
 }) => {
-  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetDate));
+  const [timeLeft, setTimeLeft] = useState(null);
   const [flashSecs, setFlashSecs] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const update = () => {
       const next = calculateTimeLeft(targetDate);
       setTimeLeft((prev) => {
         if (prev && prev.seconds !== next.seconds) {
@@ -31,8 +31,11 @@ const IronCountdown = ({
         }
         return next;
       });
-    }, 1000);
+    };
 
+    update(); // 👈 run once after mount
+
+    const timer = setInterval(update, 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
 

@@ -12,6 +12,7 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import About from "@/components/About";
 import Domains from "@/components/Domains";
+import TimeLine from "@/components/TimeLine";
 
 const Home = () => {
   const lenisRef = useRef<LenisRef | null>(null);
@@ -54,6 +55,7 @@ const Home = () => {
       <Hero />
       <About />
       <Domains/>
+      <TimeLine/>
       <Faqs />
       <Footer />
     </ReactLenis>

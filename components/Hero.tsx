@@ -8,7 +8,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0000] text-white pt-[15vh] pb-24 md:pt-0 md:pb-0"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0000] text-white pt-32 pb-24 md:pt-0 md:pb-0"
     >
       {/* BACKGROUND GRADIENTS */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#1b0303] via-[#0a0000] to-black z-0" />
@@ -20,7 +20,7 @@ const Hero = () => {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(220,38,38,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(220,38,38,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] z-0 pointer-events-none" />
 
       {/* RED BACKLIGHTING */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[800px] md:h-[800px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 md:w-[800px] md:h-[800px] bg-red-600/10 rounded-full blur-3xl pointer-events-none z-0"></div>
 
       {/* MAIN CONTENT CENTER */}
       <div className="relative z-10 flex flex-col items-center text-center px-4 w-full  transition-all">
@@ -31,11 +31,13 @@ const Hero = () => {
             className="
             absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2
             font-[Boldonse] font-black
-            text-[40px] md:text-[150px] 
+            text-[44px] md:text-[150px] 
             tracking-[0.1em] text-white 
             opacity-80 drop-shadow-[0_0_50px_rgba(220,0,0,0.4)]
             uppercase leading-none z-10
-            w-full text-center
+            w-full text-center selection:bg-red-600
+
+            #170708
           "
           >
             SuperNova
@@ -43,7 +45,7 @@ const Hero = () => {
 
           {/* IRONMAN IMAGE (Dictates container height naturally) */}
           <div
-            className="relative z-20 w-[250px] sm:w-[400px] lg:w-[400px] mt-[10%] md:mt-[8%]"
+            className="relative z-20 w-[200px] sm:w-[400px] lg:w-[400px] mt-[10%] md:mt-[8%]"
             style={{ animation: "float 6s ease-in-out infinite" }}
           >
             <Image
