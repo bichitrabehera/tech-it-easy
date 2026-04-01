@@ -37,10 +37,10 @@ const Footer = () => {
                   alt="Deadpool"
                   width={300}
                   height={300}
-                  className="w-80 sm:w-107.5 md:w-195 h-auto object-contain relative z-10 "
+                  className="w-120 sm:w-140 md:w-195 h-auto object-contain relative z-10 "
                 />
               </div>
-              <h2 className="font-[Boldonse] text-[30px] md:text-[44px] leading-tight text-[#ffe2e2] uppercase">
+              <h2 className="font-[Boldonse] text-4xl sm:text-4xl md:text-4xl leading-tight text-[#ffe2e2] uppercase">
                 Ready To Build Something Heroic?
               </h2>
               <p className="mt-4 text-red-100/70 max-w-[60ch]">
@@ -49,13 +49,13 @@ const Footer = () => {
               </p>
             </div>
 
-            <div className="mt-7 flex flex-wrap gap-3">
-              <button className="px-6 py-2.5 rounded-full bg-red-600 text-white text-sm font-semibold tracking-wide hover:bg-red-500 transition-colors">
+            <div className="mt-7 ml-2 flex flex-wrap gap-3">
+              <button className="px-8 py-2.5 skew-x-[-15deg] bg-red-600 text-white text-sm font-semibold tracking-wide hover:bg-red-500 transition-colors">
                 Register Your Team
               </button>
               <button
                 onClick={() => handleScroll("domains")}
-                className="px-6 py-2.5 rounded-full border border-red-500/50 text-red-200 text-sm font-semibold tracking-wide hover:bg-red-500/15 transition-colors"
+                className="px-6 py-2.5 skew-x-[-15deg] border border-red-500/50 text-red-200 text-sm font-semibold tracking-wide hover:bg-red-500/15 transition-colors"
               >
                 Explore Domains
               </button>
@@ -117,7 +117,7 @@ const Footer = () => {
           <p className="uppercase tracking-wider text-center">
             © 2026 Supernova. Maximum Effort.
           </p>
-          <p className="tracking-[0.2em] uppercase text-[10px] md:text-xs text-red-300/70">
+          <p className="tracking-[0.2em] uppercase text-xs md:text-sm text-red-300/70">
             Build • Break • Rebuild
           </p>
         </div>

@@ -184,6 +184,7 @@ const StyledWrapper = styled.div`
     padding: 40px 24px 32px;
     overflow: hidden;
     font-family: "Rajdhani", "Segoe UI", sans-serif;
+    border : 1px solid #ffffff30;
   }
 
   .corner-web {

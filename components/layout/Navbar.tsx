@@ -11,6 +11,7 @@ const Navbar = () => {
     { name: "Home", id: "home" },
     { name: "About", id: "about" },
     { name: "Domains", id: "domains" },
+    { name: "Timeline", id: "timeline" },
     { name: "FAQs", id: "faqs" },
   ];
 
@@ -24,7 +25,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-[1000] pointer-events-none">
+      <nav className="fixed top-0 left-0 w-full z-1000 pointer-events-none">
         <div className="w-full backdrop-blur-xl border-b border-neutral-900/30 px-6 md:px-12 py-4 flex justify-between items-center shadow-[0_4px_30px_rgba(220,0,0,0.1)] pointer-events-auto transition-all">
           <div className="flex items-center gap-3">
             <Link href="/" className="pointer-events-auto group">
@@ -58,7 +59,7 @@ const Navbar = () => {
       </nav>
 
       <div
-        className={`fixed inset-0 z-[999] transition-all duration-500 ${
+        className={`fixed inset-0 z-999 transition-all duration-500 ${
           open ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >
@@ -68,7 +69,7 @@ const Navbar = () => {
         />
 
         <div
-          className={`absolute top-0 right-0 h-full w-full max-w-sm bg-[#0a0000] border-l border-red-900/40 shadow-[-10px_0_40px_rgba(220,0,0,0.15)] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          className={`absolute top-0 right-0 h-full w-full max-w-sm bg-[#0a0000] border-l border-red-900/40 shadow-[-10px_0_40px_rgba(220,0,0,0.15)] transition-transform duration-500  ${
             open ? "translate-x-0" : "translate-x-full"
           }`}
         >

@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function About() {
   return (
-    <section id="about" className="relative w-full py-10 lg:py-30 bg-[#08000a] overflow-hidden flex items-center justify-center">
+    <section id="about" className="relative w-full border-b border-[#ffffff30] py-10 lg:py-30 bg-[#08000a] overflow-hidden flex items-center justify-center">
       {/* Seamless Transitions */}
       <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-black to-transparent pointer-events-none z-0" />
       <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-black to-transparent pointer-events-none z-0" />
@@ -20,7 +20,7 @@ export default function About() {
             The Battle Begins
           </div>
 
-          <h2 className="font-[Boldonse] mt-10 font-black text-6xl md:text-7xl tracking-[0.08em] leading-none text-white drop-shadow-[0_0_30px_rgba(220,0,0,0.5)] uppercase mb-8">
+          <h2 className="font-[Boldonse] mt-10 font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-[0.08em] leading-none text-white drop-shadow-[0_0_30px_rgba(220,0,0,0.5)] uppercase mb-8">
             ABOU
             <span
               className="text-transparent"

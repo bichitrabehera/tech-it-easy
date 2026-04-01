@@ -3,12 +3,25 @@ import React from "react";
 import IronManCountdown from "./ui/CountDown";
 import Button from "./ui/Button";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 const Hero = () => {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkScreen = () => {
+      setIsDesktop(window.innerWidth >= 768); // md breakpoint
+    };
+
+    checkScreen();
+    window.addEventListener("resize", checkScreen);
+    return () => window.removeEventListener("resize", checkScreen);
+  }, []);
   return (
     <section
       id="home"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0000] text-white pt-32 pb-24 md:pt-0 md:pb-0"
+      className="relative min-h-screen flex flex-col border-b border-[#ffffff30] items-center justify-center overflow-hidden bg-[#0a0000] text-white pt-32 pb-24 md:pt-0 md:pb-0"
     >
       {/* BACKGROUND GRADIENTS */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#1b0303] via-[#0a0000] to-black z-0" />
@@ -31,7 +44,7 @@ const Hero = () => {
             className="
             absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2
             font-[Boldonse] font-black
-            text-[44px] md:text-[150px] 
+            text-4xl sm:text-4xl md:text-8xl lg:text-9xl
             tracking-[0.1em] text-white 
             opacity-80 drop-shadow-[0_0_50px_rgba(220,0,0,0.4)]
             uppercase leading-none z-10
@@ -61,18 +74,18 @@ const Hero = () => {
         {/* DETAILS SECTION */}
         <div className="relative z-30 flex flex-col items-center mt-6 md:mt-12">
           {/* TAGLINE */}
-          <div className="text-[14px] sm:text-[16px] font-bold tracking-[0.2em] md:tracking-[0.3em] text-white/90 uppercase mb-6  text-center">
+          <div className="text-xs sm:text-sm md:text-base font-bold tracking-[0.2em] md:tracking-[0.3em] text-white/90 uppercase mb-6 text-center">
             Build the future.{" "}
             <span className="text-red-500 drop-shadow-[0_0_15px_rgba(220,0,0,0.8)]">
               Become the hero.
             </span>
           </div>
 
-          <div className="text-[14px] md:text-[20px] font-bold  tracking-[0.4em] text-red-300/90 uppercase drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] mb-3">
+          <div className="text-sm md:text-xl font-bold tracking-[0.4em] text-red-300/90 uppercase drop-shadow-[0_0_15px_rgba(220,0,0,0.8)] mb-3">
             24H Hackathon
           </div>
 
-          <div className="text-[12px] md:text-[18px]  tracking-[0.3em] text-red-100/60 uppercase mb-10">
+          <div className="text-xs md:text-lg tracking-[0.3em] text-red-100/60 uppercase mb-10">
             April 29–30, 2026
           </div>
 
@@ -80,33 +93,31 @@ const Hero = () => {
           <Button text="Register Now" />
         </div>
       </div>
-
-      <div
+      <motion.div
+        drag={isDesktop}
+        dragConstraints={
+          isDesktop ? { top: -200, bottom: 200, left: -200, right: 200 } : false
+        }
         className="
-        relative md:absolute z-30 
-        w-full md:w-auto flex justify-center 
-        mt-16 md:mt-0 
-        md:right-[2%] lg:right-[4%] xl:right-[8%] 
-        md:top-[60%] md:-translate-y-1/2
-        px-4 md:px-0
-      "
+    relative md:absolute z-30 
+    w-full md:w-auto flex justify-center 
+    mt-16 md:mt-0 
+
+    md:right-[2%] lg:right-[4%] xl:right-[8%] 
+    md:bottom-10 md:top-auto md:translate-y-0
+
+    px-4 md:px-0 
+    cursor-grab active:cursor-grabbing
+  "
       >
-        <div
-          className="
-          relative bg-[#08000a]/80 backdrop-blur-xl 
-          border border-red-600/10 rounded-xl p-2 sm:p-2 
-          
-          w-full max-w-[400px] md:w-auto
-        "
-        >
-          {/* Inner Glow */}
+        <div className="relative bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl p-2 w-full max-w-[400px] md:w-auto">
           <div className="absolute inset-0 bg-red-600/10 blur-3xl rounded-xl pointer-events-none" />
 
           <div className="relative z-10">
             <IronManCountdown targetDate="2026-04-29T10:00:00" />
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <style>{`
         @keyframes float {

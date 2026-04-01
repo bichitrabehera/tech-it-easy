@@ -11,11 +11,11 @@ const Faqs = () => {
   };
 
   return (
-    <section id="faqs" className="relative w-full py-30 flex flex-col justify-center">
+    <section id="faqs" className="relative border-b border-[#ffffff30] w-full py-30 flex flex-col justify-center">
       <div className="absolute inset-0 bg-[#00040a]/80 z-0 pointer-events-none backdrop-blur-sm" />
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
-        <h2 className="font-[Boldonse] font-black text-6xl md:text-7xl tracking-[0.08em] leading-none text-white drop-shadow-[0_0_30px_rgba(38,102,220,0.5)] uppercase mb-16 text-center lg:text-left">
+        <h2 className="font-[Boldonse] font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-[0.08em] leading-none text-white drop-shadow-[0_0_30px_rgba(38,102,220,0.5)] uppercase mb-16 text-center lg:text-left">
           FAQ
           <span
             className="text-transparent"
