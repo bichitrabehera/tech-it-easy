@@ -49,7 +49,7 @@ const Navbar = () => {
           </ul>
 
           <div className="hidden md:block scale-90 origin-right">
-            <Button text="Register" href="#" />
+            <Button text="Register" href="/register" />
           </div>
 
           <div className="md:hidden flex justify-end">
@@ -97,7 +97,7 @@ const Navbar = () => {
               className="mt-12 flex justify-center"
               onClick={() => setOpen(false)}
             >
-              <Button text="Register" href="#" />
+              <Button text="Register" href="/register" />
             </div>
           </div>
         </div>
