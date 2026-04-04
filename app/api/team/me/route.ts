@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
         status: team.status,
         members: team.members,
         githubId: team.githubId,
+        githubRepo: team.githubRepo,
         idProofUrl: team.idProofUrl,
         paymentStatus: team.paymentStatus,
         paymentProof: team.paymentProof,

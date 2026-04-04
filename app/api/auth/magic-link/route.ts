@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { sendEmail, FROM_EMAIL } from "@/lib/mail";
 import { generateMagicToken } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
@@ -38,8 +38,7 @@ export async function POST(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const magicLink = `${appUrl}/verify?token=${magicToken}`;
     
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    await sendEmail({
       to: email,
       subject: "Your SuperNova Hackathon Login Link",
       html: `

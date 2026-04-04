@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
-export default function VerifyPage() {
+function VerifyContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -45,38 +45,56 @@ export default function VerifyPage() {
   }, [token, router]);
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="text-center px-6">
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center selection:bg-blue-500/30">
+      <div className="text-center px-6 max-w-sm w-full">
+        <div className="flex justify-center mb-8">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <ShieldCheck className="text-white" size={28} />
+            </div>
+        </div>
+
         {status === "loading" && (
-          <>
-            <Loader2 className="mx-auto animate-spin text-red-500 mb-4" size={48} />
-            <h1 className="text-2xl font-bold text-white mb-2">{message}</h1>
-            <p className="text-neutral-400">Please wait while we verify your link...</p>
-          </>
+          <div className="space-y-4">
+            <Loader2 className="mx-auto animate-spin text-blue-500 h-10 w-10" />
+            <h1 className="text-xl font-bold text-white tracking-tight">{message}</h1>
+            <p className="text-slate-500 text-sm font-medium tracking-wide">Syncing with SuperNova 2026 terminal...</p>
+          </div>
         )}
 
         {status === "success" && (
-          <>
-            <CheckCircle className="mx-auto text-green-500 mb-4" size={48} />
-            <h1 className="text-2xl font-bold text-white mb-2">{message}</h1>
-            <p className="text-neutral-400">Welcome to SuperNova 2026!</p>
-          </>
+          <div className="space-y-4">
+            <CheckCircle className="mx-auto text-blue-400 h-10 w-10" />
+            <h1 className="text-xl font-bold text-white tracking-tight">{message}</h1>
+            <p className="text-slate-500 text-sm font-medium tracking-wide">Welcome to the inner circle.</p>
+          </div>
         )}
 
         {status === "error" && (
-          <>
-            <XCircle className="mx-auto text-red-500 mb-4" size={48} />
-            <h1 className="text-2xl font-bold text-white mb-2">Verification Failed</h1>
-            <p className="text-neutral-400 mb-6">{message}</p>
+          <div className="space-y-6">
+            <XCircle className="mx-auto text-red-400 h-10 w-10" />
+            <h1 className="text-xl font-bold text-white tracking-tight italic">Link Refused</h1>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed">{message}</p>
             <Link
               href="/login"
-              className="inline-block px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              className="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-600/10"
             >
-              Request New Link
+              Request Access Again
             </Link>
-          </>
+          </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-500" size={32} />
+      </div>
+    }>
+      <VerifyContent />
+    </Suspense>
   );
 }

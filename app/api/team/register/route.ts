@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { sendEmail, FROM_EMAIL } from "@/lib/mail";
 import { generateMagicToken } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
@@ -10,10 +10,11 @@ export async function POST(req: NextRequest) {
     const teamName = formData.get("teamName") as string;
     const leaderName = formData.get("leaderName") as string;
     const leaderEmail = formData.get("leaderEmail") as string;
+    const leaderPhone = formData.get("leaderPhone") as string;
     const membersJson = formData.get("members") as string;
     const pptUrl = formData.get("pptUrl") as string | null;
     
-    if (!teamName || !leaderName || !leaderEmail) {
+    if (!teamName || !leaderName || !leaderEmail || !leaderPhone) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -38,12 +39,18 @@ export async function POST(req: NextRequest) {
         data: {
           teamName,
           leaderName,
+          leaderEmail,
+          leaderPhone,
           pptUrl: pptUrl || existingTeam.pptUrl,
           magicToken,
           tokenExpiry,
           members: {
             deleteMany: {},
-            create: members.map((name: string) => ({ name })),
+            create: members.map((member: {name: string; email: string; phone: string}) => ({ 
+              name: member.name,
+              email: member.email,
+              phone: member.phone
+            })),
           },
         },
         include: { members: true },
@@ -55,11 +62,16 @@ export async function POST(req: NextRequest) {
           teamName,
           leaderName,
           leaderEmail,
+          leaderPhone,
           pptUrl,
           magicToken,
           tokenExpiry,
           members: {
-            create: members.map((name: string) => ({ name })),
+            create: members.map((member: {name: string; email: string; phone: string}) => ({ 
+              name: member.name,
+              email: member.email,
+              phone: member.phone
+            })),
           },
         },
         include: { members: true },
@@ -71,26 +83,24 @@ export async function POST(req: NextRequest) {
     const magicLink = `${appUrl}/verify?token=${magicToken}`;
     
     try {
-      await resend.emails.send({
-        from: FROM_EMAIL,
+      await sendEmail({
         to: leaderEmail,
-        subject: "Your SuperNova Hackathon Magic Link",
+        subject: "Application Received - SuperNova 2026",
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #dc2626;">Welcome to SuperNova 2026!</h2>
-            <p>Hi ${leaderName},</p>
-            <p>Your team <strong>${teamName}</strong> has been registered successfully.</p>
-            <p>Click the button below to access your dashboard and manage your submission:</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${magicLink}" 
-                 style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                Access Your Dashboard
-              </a>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 40px; color: #111827;">
+            <h2 style="color: #dc2626; font-size: 24px; margin-bottom: 16px;">Application Received!</h2>
+            <p style="font-size: 16px; line-height: 1.5;">Hi ${leaderName},</p>
+            <p style="font-size: 16px; line-height: 1.5;">Thank you for registering your team <strong>${teamName}</strong> for the SuperNova 2026 Hackathon.</p>
+            
+            <div style="background: #fef2f2; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px solid #fee2e2;">
+              <p style="margin: 0; color: #991b1b; font-weight: 500;">Status: Under Review</p>
+              <p style="margin: 8px 0 0; color: #7f1d1d; font-size: 14px;">Our team is currently reviewing your application. You will receive an email if your team is selected for the next round.</p>
             </div>
-            <p>Or copy this link: <a href="${magicLink}">${magicLink}</a></p>
-            <p style="color: #666; font-size: 14px;">This link expires in 24 hours.</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="color: #666; font-size: 12px;">
+
+            <p style="font-size: 14px; color: #6b7280;">No further action is required from your side at this moment.</p>
+
+            <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+            <p style="color: #6b7280; font-size: 12px; text-align: center;">
               SuperNova 2026 Hackathon<br>
               April 29-30, 2026
             </p>

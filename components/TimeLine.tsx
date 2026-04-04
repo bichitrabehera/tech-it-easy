@@ -87,7 +87,7 @@ const TimeLine = () => {
   return (
     <section
       ref={containerRef}
-      className="relative bg-[#050005] py-32 px-4 border-b border-[#ffffff10] overflow-hidden"
+      className="relative bg-[#050005] py-32 px-4 overflow-hidden"
     >
       {/* Background Grid & Vignette (Mystical Purple/Orange) */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(245,158,11,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none opacity-50" />

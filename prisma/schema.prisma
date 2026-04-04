@@ -12,6 +12,7 @@ model Team {
   teamName      String
   leaderName    String
   leaderEmail   String        @unique
+  leaderPhone   String
   pptUrl        String?
   status        TeamStatus    @default(PENDING)
   createdAt     DateTime      @default(now())
@@ -22,6 +23,7 @@ model Team {
   
   // Post-selection fields
   githubId      String?
+  githubRepo    String?
   idProofUrl    String?
   paymentStatus PaymentStatus @default(UNPAID)
   paymentProof  String?
@@ -33,6 +35,8 @@ model Team {
 model Member {
   id     String @id @default(uuid())
   name   String
+  email  String
+  phone  String
   teamId String
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   

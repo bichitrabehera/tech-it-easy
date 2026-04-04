@@ -16,52 +16,52 @@ import TimeLine from "@/components/TimeLine";
 import Sponsors from "@/components/Sponsors";
 
 const Home = () => {
-  // const lenisRef = useRef<LenisRef | null>(null);
+  const lenisRef = useRef<LenisRef | null>(null);
 
-  // useEffect(() => {
-  //   gsap.registerPlugin(ScrollTrigger);
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
 
-  //   const lenis = lenisRef.current?.lenis;
+    const lenis = lenisRef.current?.lenis;
 
-  //   if (!lenis) return;
+    if (!lenis) return;
 
-  //   // 🔥 Sync Lenis with GSAP
-  //   lenis.on("scroll", ScrollTrigger.update);
+    // 🔥 Sync Lenis with GSAP
+    lenis.on("scroll", ScrollTrigger.update);
 
-  //   const onTick = (time: number) => {
-  //     lenis.raf(time * 1000);
-  //   };
+    const onTick = (time: number) => {
+      lenis.raf(time * 1000);
+    };
 
-  //   gsap.ticker.add(onTick);
+    gsap.ticker.add(onTick);
 
-  //   gsap.ticker.lagSmoothing(0);
+    gsap.ticker.lagSmoothing(0);
 
-  //   return () => {
-  //     gsap.ticker.remove(onTick);
-  //   };
-  // }, []);
+    return () => {
+      gsap.ticker.remove(onTick);
+    };
+  }, []);
 
   return (
-   <div className="">
-     {/* <ReactLenis
-      // ref={lenisRef}
-      root
-      options={{
-        lerp: 0.08,
-        duration: 1.2,
-        smoothWheel: true,
-      }}
-    > */}
-      <Navbar />
-      <Hero />
-      <About />
-      <Domains/>
-      <TimeLine/>
-      <Faqs />
-      <Sponsors />
-      <Footer />
-    {/* </ReactLenis> */}
-   </div>
+    <div className="">
+      <ReactLenis
+        // ref={lenisRef}
+        root
+        options={{
+          lerp: 0.08,
+          duration: 1.2,
+          smoothWheel: true,
+        }}
+      >
+        <Navbar />
+        <Hero />
+        <About />
+        <Domains />
+        <TimeLine />
+        <Faqs />
+        <Sponsors />
+        <Footer />
+      </ReactLenis>
+    </div>
   );
 };
 
