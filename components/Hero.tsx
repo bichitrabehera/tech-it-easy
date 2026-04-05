@@ -21,7 +21,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex flex-col border-b border-[#ffffff30] items-center justify-center overflow-hidden bg-[#0a0000] text-white pt-32 pb-24 md:pt-0 md:pb-0"
+      className="relative min-h-screen flex flex-col  items-center justify-center overflow-hidden bg-[#0a0000] text-white pt-32 pb-24 md:pt-0 md:pb-0"
     >
       {/* BACKGROUND GRADIENTS */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#1b0303] via-[#0a0000] to-black z-0" />
@@ -44,7 +44,7 @@ const Hero = () => {
             className="
             absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2
             font-[Boldonse] font-black
-            text-4xl sm:text-4xl md:text-8xl lg:text-9xl
+            text-4xl sm:text-4xl md:text-7xl lg:text-8xl
             tracking-[0.1em] text-white 
             opacity-80 drop-shadow-[0_0_50px_rgba(220,0,0,0.4)]
             uppercase leading-none z-10
