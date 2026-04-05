@@ -34,12 +34,27 @@ export async function GET(req: NextRequest) {
       );
     }
     
-    // Set session cookie
+    // Invalidate the magic token after successful use (security best practice)
+    // Generate a new session token for the cookie
+    const { generateMagicToken } = await import("@/lib/auth");
+    const sessionToken = generateMagicToken();
+    const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    
+    // Update team with new session token, invalidate magic token
+    await prisma.team.update({
+      where: { id: team.id },
+      data: { 
+        magicToken: sessionToken,
+        tokenExpiry: sessionExpiry 
+      },
+    });
+    
+    // Set session cookie with new token
     const cookieStore = await cookies();
-    cookieStore.set("team_token", token, {
+    cookieStore.set("team_token", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
     });

@@ -2,14 +2,35 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, FROM_EMAIL } from "@/lib/mail";
 import { generateMagicToken } from "@/lib/auth";
+import { rateLimit, getClientIP } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting: 3 requests per minute per IP
+    const ip = getClientIP(req);
+    const limit = rateLimit(`magic-link:${ip}`, 3, 60 * 1000);
+    
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetTime - Date.now()) / 1000)) } }
+      );
+    }
+    
     const { email } = await req.json();
     
     if (!email) {
       return NextResponse.json(
         { error: "Email is required" },
+        { status: 400 }
+      );
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: "Invalid email format" },
         { status: 400 }
       );
     }

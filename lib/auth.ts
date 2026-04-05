@@ -2,8 +2,12 @@ import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 
+if (!process.env.ADMIN_JWT_SECRET) {
+  throw new Error("ADMIN_JWT_SECRET environment variable is required");
+}
+
 const ADMIN_JWT_SECRET = new TextEncoder().encode(
-  process.env.ADMIN_JWT_SECRET || "fallback-secret"
+  process.env.ADMIN_JWT_SECRET
 );
 
 export interface AdminTokenPayload {

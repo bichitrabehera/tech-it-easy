@@ -2,33 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminToken, createAdminToken, hashPassword, verifyPassword } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { adminLoginSchema } from "@/lib/validation";
+import { rateLimit, getClientIP } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    // Rate limiting: 5 login attempts per minute per IP
+    const ip = getClientIP(req);
+    const limit = rateLimit(`admin-login:${ip}`, 5, 60 * 1000);
     
-    if (!email || !password) {
+    if (!limit.success) {
       return NextResponse.json(
-        { error: "Email and password required" },
+        { error: "Too many login attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetTime - Date.now()) / 1000)) } }
+      );
+    }
+    
+    const body = await req.json();
+    
+    // Validate input with Zod
+    const result = adminLoginSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: result.error.issues },
         { status: 400 }
       );
     }
+    
+    const { email, password } = result.data;
     
     // Find admin
     const admin = await prisma.admin.findUnique({
       where: { email },
     });
     
-    if (!admin) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 }
-      );
-    }
-    
-    // Verify password
-    const isValid = verifyPassword(password, admin.password);
-    if (!isValid) {
+    if (!admin || !verifyPassword(password, admin.password)) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
@@ -46,7 +54,7 @@ export async function POST(req: NextRequest) {
     cookieStore.set("admin_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
     });
