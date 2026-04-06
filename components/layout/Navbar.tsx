@@ -26,7 +26,7 @@ const Navbar = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 w-full z-1000 pointer-events-none">
-        <div className="w-full backdrop-blur-xl border-b border-neutral-900/30 px-6 md:px-12 py-4 flex justify-between items-center shadow-[0_4px_30px_rgba(220,0,0,0.1)] pointer-events-auto transition-all">
+        <div className="w-full backdrop-blur-xl px-6 md:px-12 py-4 flex justify-between items-center pointer-events-auto transition-all">
           <div className="flex items-center gap-3">
             <Link href="/" className="pointer-events-auto group">
               <h1 className="text-md font-black font-[Boldonse] tracking-widest text-white group-hover:text-red-400 transition-colors">
@@ -49,7 +49,7 @@ const Navbar = () => {
           </ul>
 
           <div className="hidden md:block scale-90 origin-right">
-            <Button text="Register" href="#" />
+            <Button text="Register" href="/register" />
           </div>
 
           <div className="md:hidden flex justify-end">
@@ -97,7 +97,7 @@ const Navbar = () => {
               className="mt-12 flex justify-center"
               onClick={() => setOpen(false)}
             >
-              <Button text="Register" href="#" />
+              <Button text="Register" href="/register" />
             </div>
           </div>
         </div>
