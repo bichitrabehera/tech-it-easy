@@ -15,7 +15,7 @@ async function main() {
     return;
   }
   
-  const admin = await prisma.admin.create({
+  await prisma.admin.create({
     data: {
       email,
       password: hashPassword(password),

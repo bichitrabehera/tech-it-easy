@@ -22,6 +22,7 @@ import {
   LogOut
 } from "lucide-react";
 import Link from "next/link";
+import { DEFAULT_RAZORPAY_PAYMENT_URL, PAYMENT_AMOUNT_INR, PAYMENT_UPI_ID } from "@/lib/constants";
 
 // Custom GitHub icon SVG to match standard
 const GithubIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -61,6 +62,10 @@ export default function DashboardPage() {
         const response = await fetch("/api/team/me");
         if (response.ok) {
           const data = await response.json();
+          if (data.team.paymentStatus !== "PAID") {
+            router.replace("/payment");
+            return;
+          }
           setTeam(data.team);
           setGithubId(data.team.githubId || "");
           setGithubRepo(data.team.githubRepo || "");
@@ -342,12 +347,12 @@ export default function DashboardPage() {
                            <div>
                               <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Registration Credit</p>
                               <div className="text-4xl font-black text-white mb-8 tracking-tighter">
-                                 ₹299
+                                 ₹{PAYMENT_AMOUNT_INR}
                                  <span className="text-xs font-medium text-slate-600 ml-2 tracking-normal uppercase">Cycle fee</span>
                               </div>
                            </div>
-                           <a 
-                              href="https://rzp.io/rzp/8rg7KtzH"
+                          <a 
+                            href={DEFAULT_RAZORPAY_PAYMENT_URL}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
@@ -362,10 +367,10 @@ export default function DashboardPage() {
                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Static Terminal IP (UPI)</p>
                            <div className="p-4 bg-[#020617] border border-slate-800/80 rounded-2xl">
                               <p className="text-[9px] text-slate-600 uppercase font-bold mb-1">Direct Identity:</p>
-                              <p className="text-xs font-mono font-bold text-slate-300 break-all">bichitrabehera.345@okhdfcbank</p>
+                              <p className="text-xs font-mono font-bold text-slate-300 break-all">{PAYMENT_UPI_ID}</p>
                            </div>
                            <p className="text-[9px] text-slate-600 font-medium leading-relaxed italic uppercase">
-                              Submit required credit (₹299) to the identity above and capture the visual log.
+                              Submit required credit (₹{PAYMENT_AMOUNT_INR}) to the identity above and capture the visual log.
                            </p>
                         </div>
                      </div>

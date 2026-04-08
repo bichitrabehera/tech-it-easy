@@ -3,6 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { verifyAdminToken } from "@/lib/auth";
 import Papa from "papaparse";
 
+type ExportTeam = {
+  id: string;
+  teamName: string;
+  leaderName: string;
+  leaderEmail: string;
+  members: { name: string }[];
+  status: string;
+  pptUrl: string | null;
+  paymentStatus: string;
+  githubId: string | null;
+  createdAt: Date;
+};
+
 export async function GET(req: NextRequest) {
   try {
     // Verify admin token
@@ -26,7 +39,7 @@ export async function GET(req: NextRequest) {
     });
     
     // Flatten data for CSV
-    const csvData = teams.map(team => ({
+    const csvData = teams.map((team: ExportTeam) => ({
       id: team.id,
       teamName: team.teamName,
       leaderName: team.leaderName,

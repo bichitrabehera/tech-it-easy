@@ -10,13 +10,15 @@ function VerifyContent() {
   const router = useRouter();
   const token = searchParams.get("token");
   
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("Verifying your magic link...");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    token ? "loading" : "error"
+  );
+  const [message, setMessage] = useState(
+    token ? "Verifying your magic link..." : "Invalid or missing token"
+  );
 
   useEffect(() => {
     if (!token) {
-      setStatus("error");
-      setMessage("Invalid or missing token");
       return;
     }
 
@@ -27,9 +29,13 @@ function VerifyContent() {
 
         if (data.success) {
           setStatus("success");
-          setMessage("Login successful! Redirecting to dashboard...");
+          setMessage(
+            data.nextRoute === "/payment"
+              ? "Access confirmed! Redirecting to payment portal..."
+              : "Login successful! Redirecting to dashboard..."
+          );
           setTimeout(() => {
-            router.push("/dashboard");
+            router.push(data.nextRoute || "/dashboard");
           }, 1500);
         } else {
           setStatus("error");
@@ -75,10 +81,10 @@ function VerifyContent() {
             <h1 className="text-xl font-bold text-white tracking-tight italic">Link Refused</h1>
             <p className="text-slate-500 text-sm font-medium leading-relaxed">{message}</p>
             <Link
-              href="/login"
+              href="/"
               className="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-600/10"
             >
-              Request Access Again
+              Back to Home
             </Link>
           </div>
         )}

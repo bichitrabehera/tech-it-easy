@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendEmail, FROM_EMAIL } from "@/lib/mail";
+import { sendEmail } from "@/lib/mail";
 import { generateMagicToken } from "@/lib/auth";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
+import { HACKATHON_TITLE, getAppUrl } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,7 +46,14 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
-    
+
+    if (team.status !== "SELECTED") {
+      return NextResponse.json(
+        { error: "Your team is not eligible for dashboard access yet" },
+        { status: 403 }
+      );
+    }
+
     // Generate new magic token
     const magicToken = generateMagicToken();
     const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -55,22 +63,33 @@ export async function POST(req: NextRequest) {
       data: { magicToken, tokenExpiry },
     });
     
-    // Send magic link email
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    // Send access link email
+    const appUrl = getAppUrl();
     const magicLink = `${appUrl}/verify?token=${magicToken}`;
+
+    const isPaid = team.paymentStatus === "PAID";
+    const subject = isPaid
+      ? "Your SuperNova dashboard access link"
+      : "Your SuperNova payment portal link";
+    const heading = isPaid
+      ? "Dashboard Access"
+      : "Payment Portal Access";
+    const bodyCopy = isPaid
+      ? "Your payment has been verified. Use the button below to open your dashboard."
+      : "Your team has been selected. Use the button below to open the payment portal and complete payment.";
     
     await sendEmail({
       to: email,
-      subject: "Your SuperNova Hackathon Login Link",
+      subject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #dc2626;">SuperNova 2026 - Login Link</h2>
+          <h2 style="color: #dc2626;">${HACKATHON_TITLE} - ${heading}</h2>
           <p>Hi ${team.leaderName},</p>
-          <p>Click the button below to access your team dashboard:</p>
+          <p>${bodyCopy}</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${magicLink}" 
                style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Access Dashboard
+              ${isPaid ? "Open Dashboard" : "Open Payment Portal"}
             </a>
           </div>
           <p>Or copy this link: <a href="${magicLink}">${magicLink}</a></p>
@@ -81,7 +100,9 @@ export async function POST(req: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      message: "Magic link sent to your email!",
+      message: isPaid
+        ? "Dashboard access link sent to your email!"
+        : "Payment portal link sent to your email!",
     });
     
   } catch (error) {

@@ -14,6 +14,15 @@ type TimelineDay = {
   events: TimelineEvent[];
 };
 
+const PORTAL_SPARKLES = [
+  { top: "12%", left: "18%", delay: "0s" },
+  { top: "24%", left: "74%", delay: "0.5s" },
+  { top: "38%", left: "12%", delay: "1s" },
+  { top: "52%", left: "82%", delay: "1.5s" },
+  { top: "68%", left: "26%", delay: "2s" },
+  { top: "80%", left: "62%", delay: "2.5s" },
+];
+
 const TIMELINE_DATA: TimelineDay[] = [
   {
     day: "Day 1 — Origin Begins",
@@ -116,12 +125,16 @@ const TimeLine = () => {
 
           {/* Sparkles around portal */}
           <div className="absolute inset-0 pointer-events-none">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="absolute w-1 h-1 bg-white rounded-full animate-ping" style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${i * 0.5}s`
-              }} />
+            {PORTAL_SPARKLES.map((sparkle, index) => (
+              <div
+                key={index}
+                className="absolute w-1 h-1 bg-white rounded-full animate-ping"
+                style={{
+                  top: sparkle.top,
+                  left: sparkle.left,
+                  animationDelay: sparkle.delay,
+                }}
+              />
             ))}
           </div>
         </div>

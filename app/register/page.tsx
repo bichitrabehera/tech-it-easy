@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Plus, Trash2, Upload, Loader2, X, Sparkles, Users, Mail, User, Zap, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { REGISTRATION_STEPS, REGISTRATION_SUBTITLE, REGISTRATION_TITLE } from "@/lib/constants";
 
 const schema = z.object({
   teamName: z.string().min(2, "Team name must be at least 2 characters"),
@@ -174,7 +175,7 @@ export default function RegisterPage() {
       const result = await response.json();
 
       if (result.success) {
-        setMessage({ type: "success", text: "Record Created Successfully" });
+        setMessage({ type: "success", text: result.message || "Record created successfully" });
         localStorage.removeItem("registration_draft");
         // Reset form
         setMembers([{ name: "", email: "", phone: "" }]);
@@ -216,11 +217,18 @@ export default function RegisterPage() {
         <div className="mb-16 text-center">
 
           <h1 className="text-2xl md:text-7xl font-bold mb-6 font-[Boldonse] tracking-widest text-red-500 drop-shadow-[0_0_50px_rgba(220,0,0,0.4)] ">
-            Register Your Team
+            {REGISTRATION_TITLE}
           </h1>
           <p className="text-lg text-white/80 max-w-md mx-auto tracking-widest">
-            Build the future. <span className="text-red-500 drop-shadow-[0_0_15px_rgba(220,0,0,0.8)]">Become the hero.</span>
+            {REGISTRATION_SUBTITLE}
           </p>
+          <div className="mt-6 flex flex-col md:flex-row gap-3 justify-center text-[10px] uppercase tracking-[0.25em] text-white/55 font-bold">
+            {REGISTRATION_STEPS.map((step) => (
+              <span key={step} className="px-3 py-2 rounded-full border border-white/10 bg-white/5">
+                {step}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Message Display */}
@@ -392,7 +400,7 @@ export default function RegisterPage() {
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl text-sm font-medium text-white/90 hover:bg-red-600/20 hover:border-red-500 transition-all duration-300"
               >
                 <Plus size={16} />
-                Add Team Member
+                Add Member
               </button>
             )}
           </div>
@@ -446,8 +454,8 @@ export default function RegisterPage() {
                             <Upload size={24} />
                           </div>
                           <div>
-                            <p className="text-white font-medium mb-1">Upload Presentation</p>
-                            <p className="text-white/60 text-sm">PPT or PPTX (Max 50MB)</p>
+                            <p className="text-white font-medium mb-1">Upload PPT</p>
+                            <p className="text-white/60 text-sm">PPT / PPTX up to 50MB</p>
                           </div>
                         </div>
                       )}
@@ -474,7 +482,7 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <Zap className="w-5 h-5" />
-                  Register Team
+                  Submit Application
                 </>
               )}
             </button>

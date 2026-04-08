@@ -5,15 +5,22 @@ import { useRouter } from "next/navigation";
 import {
   Loader2,
   LogOut,
-  Filter,
   Search,
-  Users,
   LayoutDashboard,
   ShieldCheck,
   ChevronDown,
   Activity
 } from "lucide-react";
 import Link from "next/link";
+import {
+  ADMIN_ACTION_APPROVE,
+  ADMIN_ACTION_CONFIRM_PAYMENT,
+  ADMIN_ACTION_REJECT,
+  ADMIN_ACTION_VIEW_PPT,
+  ADMIN_ACTION_VIEW_PROOF,
+  ADMIN_SUBTITLE,
+  ADMIN_TITLE,
+} from "@/lib/constants";
 
 interface Team {
   id: string;
@@ -83,6 +90,19 @@ export default function AdminDashboardPage() {
     router.push("/admin");
   };
 
+  const sendTeamEmail = async (
+    teamId: string,
+    type: "selected" | "rejected" | "payment_confirmed"
+  ) => {
+    const response = await fetch(`/api/admin/teams/${teamId}/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type }),
+    });
+
+    return response.ok;
+  };
+
   const handleExport = () => {
     const url =
       statusFilter !== "ALL"
@@ -102,28 +122,17 @@ export default function AdminDashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (response.ok) await fetchTeams();
+      if (response.ok) {
+        if (status === "SELECTED") {
+          const emailSent = await sendTeamEmail(teamId, "selected");
+          if (!emailSent) {
+            alert("Team selected, but the payment email could not be sent.");
+          }
+        }
+        await fetchTeams();
+      }
     } catch {
       console.error("Failed to update status");
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleSendEmail = async (
-    teamId: string,
-    type: "selected" | "rejected" | "payment_confirmed"
-  ) => {
-    setActionLoading(`${teamId}-email`);
-    try {
-      await fetch(`/api/admin/teams/${teamId}/email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type }),
-      });
-      alert("Email sent successfully!");
-    } catch {
-      alert("Failed to send email");
     } finally {
       setActionLoading(null);
     }
@@ -137,6 +146,10 @@ export default function AdminDashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paymentStatus: "PAID" }),
       });
+      const emailSent = await sendTeamEmail(teamId, "payment_confirmed");
+      if (!emailSent) {
+        alert("Payment was confirmed, but the dashboard email could not be sent.");
+      }
       await fetchTeams();
       alert("Payment confirmed!");
     } catch {
@@ -229,9 +242,9 @@ export default function AdminDashboardPage() {
         {/* Header Bar */}
         <header className="h-20 border-b border-slate-800/50 flex items-center justify-between px-8 bg-[#020617]/50 backdrop-blur-xl sticky top-0 z-10">
           <div>
-            <h2 className="text-xl font-bold tracking-tight">Team Management Control</h2>
+            <h2 className="text-xl font-bold tracking-tight">{ADMIN_TITLE}</h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-blue-500 uppercase font-bold tracking-widest">Registrations</span>
+              <span className="text-[10px] text-blue-500 uppercase font-bold tracking-widest">{ADMIN_SUBTITLE}</span>
             </div>
           </div>
 
@@ -249,10 +262,10 @@ export default function AdminDashboardPage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {[
-              { label: "Total Records", value: stats.total, color: "text-blue-500", bg: "bg-blue-500/10" },
-              { label: "Awaiting Action", value: stats.pending, color: "text-amber-500", bg: "bg-amber-500/10" },
-              { label: "Verified Teams", value: stats.selected, color: "text-blue-400", bg: "bg-blue-400/10" },
-              { label: "Rejected Entries", value: stats.rejected, color: "text-slate-500", bg: "bg-slate-800" },
+              { label: "All", value: stats.total, color: "text-blue-500", bg: "bg-blue-500/10" },
+              { label: "Pending", value: stats.pending, color: "text-amber-500", bg: "bg-amber-500/10" },
+              { label: "Selected", value: stats.selected, color: "text-blue-400", bg: "bg-blue-400/10" },
+              { label: "Rejected", value: stats.rejected, color: "text-slate-500", bg: "bg-slate-800" },
             ].map((s, i) => (
               <div key={i} className="bg-slate-900/40 border border-slate-800/50 p-6 rounded-2xl">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{s.label}</p>
@@ -269,7 +282,7 @@ export default function AdminDashboardPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search database records..."
+                placeholder="Search teams..."
                 className="w-full bg-slate-900/40 border border-slate-800/50 focus:border-blue-500/50 rounded-xl py-3.5 pl-12 pr-4 text-xs font-medium focus:outline-none transition-all placeholder:text-slate-600"
               />
             </div>
@@ -281,7 +294,7 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="w-full bg-slate-900/40 border border-slate-800/50 rounded-xl py-3.5 pl-5 pr-10 text-[10px] font-bold uppercase tracking-widest appearance-none focus:outline-none focus:border-blue-500/50 transition-all cursor-pointer text-slate-400"
                 >
-                  <option value="ALL">Filter: All Status</option>
+                  <option value="ALL">All</option>
                   <option value="PENDING">Pending</option>
                   <option value="SELECTED">Selected</option>
                   <option value="REJECTED">Rejected</option>
@@ -297,10 +310,10 @@ export default function AdminDashboardPage() {
               <table className="w-full text-left text-[11px]">
                 <thead>
                   <tr className="bg-slate-800/40 border-b border-slate-800/60 transition-colors">
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">REF_ID</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Team Name</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Leader Name</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Contact Email</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">ID</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Team</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Leader</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Email</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Status</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Payment</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500 text-right">Actions</th>
@@ -364,14 +377,14 @@ export default function AdminDashboardPage() {
                                 disabled={actionLoading === team.id}
                                 className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded border border-blue-600/30 transition-all disabled:opacity-20"
                               >
-                                {actionLoading === team.id ? "Processing..." : "Approve"}
+                                {actionLoading === team.id ? "Processing..." : ADMIN_ACTION_APPROVE}
                               </button>
                               <button
                                 onClick={() => handleStatusUpdate(team.id, "REJECTED")}
                                 disabled={actionLoading === team.id}
                                 className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-slate-800/50 text-slate-500 hover:bg-slate-700 hover:text-white rounded border border-slate-700/50 transition-all disabled:opacity-20"
                               >
-                                Reject
+                                {ADMIN_ACTION_REJECT}
                               </button>
                             </>
                           )}
@@ -382,18 +395,19 @@ export default function AdminDashboardPage() {
                               disabled={actionLoading === `${team.id}-payment`}
                               className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-blue-600 text-white hover:bg-blue-500 rounded transition-all shadow-lg shadow-blue-600/20 disabled:opacity-20"
                             >
-                              Verify Payment
+                              {ADMIN_ACTION_CONFIRM_PAYMENT}
                             </button>
                           )}
 
-                          {team.status === "SELECTED" && (
-                            <button
-                              onClick={() => handleSendEmail(team.id, team.paymentStatus === "PAID" ? "payment_confirmed" : "selected")}
-                              disabled={actionLoading === `${team.id}-email`}
-                              className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-500 hover:text-blue-400 transition-all border border-slate-800 hover:border-blue-500/30 rounded disabled:opacity-20"
+                          {team.paymentProof && (
+                            <a
+                              href={team.paymentProof}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-600 hover:text-blue-400 transition-all border border-slate-800 hover:border-blue-500/20 rounded"
                             >
-                              {actionLoading === `${team.id}-email` ? "Sending..." : "Notify"}
-                            </button>
+                              {ADMIN_ACTION_VIEW_PROOF}
+                            </a>
                           )}
 
                           {team.pptUrl && (
@@ -402,7 +416,7 @@ export default function AdminDashboardPage() {
                               target="_blank"
                               className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-600 hover:text-blue-400 transition-all border border-slate-800 hover:border-blue-500/20 rounded"
                             >
-                              View PPT
+                              {ADMIN_ACTION_VIEW_PPT}
                             </a>
                           )}
                         </div>

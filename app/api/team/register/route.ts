@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendEmail, FROM_EMAIL } from "@/lib/mail";
+import { sendEmail } from "@/lib/mail";
 import { generateMagicToken } from "@/lib/auth";
+import { HACKATHON_EVENT_NAME, SUBJECT_APPLICATION_RECEIVED, getAppUrl } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -79,18 +80,18 @@ export async function POST(req: NextRequest) {
     }
     
     // Send magic link email
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = getAppUrl();
     const magicLink = `${appUrl}/verify?token=${magicToken}`;
     
     try {
       await sendEmail({
         to: leaderEmail,
-        subject: "Application Received - SuperNova 2026",
+        subject: SUBJECT_APPLICATION_RECEIVED,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 40px; color: #111827;">
             <h2 style="color: #dc2626; font-size: 24px; margin-bottom: 16px;">Application Received!</h2>
             <p style="font-size: 16px; line-height: 1.5;">Hi ${leaderName},</p>
-            <p style="font-size: 16px; line-height: 1.5;">Thank you for registering your team <strong>${teamName}</strong> for the SuperNova 2026 Hackathon.</p>
+            <p style="font-size: 16px; line-height: 1.5;">Thank you for registering your team <strong>${teamName}</strong> for the ${HACKATHON_EVENT_NAME}.</p>
             
             <div style="background: #fef2f2; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px solid #fee2e2;">
               <p style="margin: 0; color: #991b1b; font-weight: 500;">Status: Under Review</p>
@@ -101,7 +102,7 @@ export async function POST(req: NextRequest) {
 
             <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
             <p style="color: #6b7280; font-size: 12px; text-align: center;">
-              SuperNova 2026 Hackathon<br>
+              ${HACKATHON_EVENT_NAME}<br>
               April 29-30, 2026
             </p>
           </div>

@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendEmail, FROM_EMAIL } from "@/lib/mail";
+import { sendEmail } from "@/lib/mail";
 import { verifyAdminToken } from "@/lib/auth";
+import { getRazorpayPaymentUrl } from "@/lib/payment";
+import {
+  HACKATHON_EVENT_NAME,
+  PAYMENT_AMOUNT_INR,
+  PAYMENT_UPI_ID,
+  SUBJECT_PAYMENT_CONFIRMED,
+  SUBJECT_REJECTED,
+  SUBJECT_SELECTED,
+  getAppUrl,
+} from "@/lib/constants";
 
 export async function POST(
   req: NextRequest,
@@ -31,7 +41,8 @@ export async function POST(
       return NextResponse.json({ error: "Team not found" }, { status: 404 });
     }
     
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = getAppUrl();
+    const paymentUrl = getRazorpayPaymentUrl();
     
     let subject = "";
     let html = "";
@@ -39,27 +50,27 @@ export async function POST(
     const magicLink = `${appUrl}/verify?token=${team.magicToken}`;
 
     if (type === "selected") {
-      subject = "Congratulations! Your Team is Selected for SuperNova 2026";
+      subject = SUBJECT_SELECTED;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 40px; color: #111827;">
           <h2 style="color: #16a34a; font-size: 24px; margin-bottom: 16px;">Congratulations ${team.leaderName}!</h2>
-          <p style="font-size: 16px; line-height: 1.5;">Great news! Your team <strong>${team.teamName}</strong> has been selected for the SuperNova 2026 Hackathon.</p>
+          <p style="font-size: 16px; line-height: 1.5;">Great news! Your team <strong>${team.teamName}</strong> has been selected for the ${HACKATHON_EVENT_NAME}.</p>
           
           <div style="background: #f9fafb; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px solid #f3f4f6;">
             <h3 style="margin-top: 0; color: #111827; font-size: 18px;">Next Steps:</h3>
             <ol style="margin-bottom: 0; padding-left: 20px; line-height: 1.6;">
-              <li>Complete the registration fee payment (₹500 per team)</li>
+              <li>Complete the registration fee payment (₹${PAYMENT_AMOUNT_INR} per team)</li>
               <li>Keep your payment screenshot/proof ready</li>
-              <li>Login to your dashboard to confirm your registration</li>
+              <li>Open the payment portal and finish the payment flow</li>
             </ol>
           </div>
 
           <div style="background: #ecfdf5; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px solid #d1fae5; text-align: center;">
             <h3 style="margin-top: 0; color: #065f46; font-size: 18px;">Payment Details</h3>
-            <p style="font-size: 20px; font-weight: bold; margin: 8px 0;">Amount: ₹500</p>
-            <p style="font-size: 16px; color: #065f46; margin-bottom: 16px;">UPI ID: <strong>bichitrabehera.345@okhdfcbank</strong></p>
+            <p style="font-size: 20px; font-weight: bold; margin: 8px 0;">Amount: ₹${PAYMENT_AMOUNT_INR}</p>
+            <p style="font-size: 16px; color: #065f46; margin-bottom: 16px;">UPI ID: <strong>${PAYMENT_UPI_ID}</strong></p>
             
-            <a href="https://rzp.io/rzp/8rg7KtzH" 
+            <a href="${paymentUrl}" 
                target="_blank"
                style="background: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
               Pay via Razorpay / UPI
@@ -68,36 +79,36 @@ export async function POST(
           </div>
 
           <div style="text-align: center; margin-top: 32px;">
-            <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">To complete your registration or upload proof, use this link:</p>
+            <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Open the payment portal to upload your proof:</p>
             <a href="${magicLink}" 
                style="background: #111827; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">
-              Access Dashboard
+              Open Payment Portal
             </a>
           </div>
 
           <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
           <p style="color: #6b7280; font-size: 12px; text-align: center;">
-            SuperNova 2026 Hackathon<br>
+            ${HACKATHON_EVENT_NAME}<br>
             April 29-30, 2026
           </p>
         </div>
       `;
     } else if (type === "rejected") {
-      subject = "SuperNova 2026 - Application Update";
+      subject = SUBJECT_REJECTED;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #dc2626;">Hello ${team.leaderName},</h2>
-          <p>Thank you for your interest in SuperNova 2026 Hackathon.</p>
+          <p>Thank you for your interest in ${HACKATHON_EVENT_NAME}.</p>
           <p>After careful review, we regret to inform you that your team <strong>${team.teamName}</strong> was not selected for this year's event.</p>
           <p>We encourage you to apply again next year and wish you the best in your future endeavors.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
           <p style="color: #666; font-size: 12px;">
-            SuperNova 2026 Hackathon
+            ${HACKATHON_EVENT_NAME}
           </p>
         </div>
       `;
     } else if (type === "payment_confirmed") {
-      subject = "Payment Confirmed - Welcome to SuperNova 2026";
+      subject = SUBJECT_PAYMENT_CONFIRMED;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 40px; color: #111827;">
           <h2 style="color: #16a34a; font-size: 24px; margin-bottom: 16px;">Payment Confirmed!</h2>
@@ -113,7 +124,7 @@ export async function POST(
             <p style="font-size: 16px; color: #111827; margin-bottom: 20px;">You can now access your dashboard to complete your team profile and GitHub details.</p>
             <a href="${magicLink}" 
                style="background: #16a34a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">
-              Access My Dashboard
+              Open Dashboard
             </a>
           </div>
 
@@ -121,7 +132,7 @@ export async function POST(
 
           <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
           <p style="color: #6b7280; font-size: 12px; text-align: center;">
-            SuperNova 2026 Hackathon<br>
+            ${HACKATHON_EVENT_NAME}<br>
             April 29-30, 2026
           </p>
         </div>

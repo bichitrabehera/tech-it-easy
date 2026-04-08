@@ -25,6 +25,20 @@ export async function GET(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    if (team.status === "PENDING") {
+      return NextResponse.json(
+        { error: "Your team is still under review" },
+        { status: 403 }
+      );
+    }
+
+    if (team.status === "REJECTED") {
+      return NextResponse.json(
+        { error: "Your team was not selected" },
+        { status: 403 }
+      );
+    }
     
     // Check if token is expired
     if (team.tokenExpiry && new Date() > team.tokenExpiry) {
@@ -61,6 +75,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({
       success: true,
+      nextRoute: team.paymentStatus === "PAID" ? "/dashboard" : "/payment",
       team: {
         id: team.id,
         teamName: team.teamName,
