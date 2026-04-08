@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import { existsSync, mkdirSync } from "fs";
-import { join } from "path";
-import { randomUUID } from "crypto";
-
-const UPLOAD_DIR = join(process.cwd(), "public", "uploads", "ppts");
-
-// Ensure upload directory exists
-if (!existsSync(UPLOAD_DIR)) {
-  mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+import { imagekit } from "@/lib/imagekit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,18 +35,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate unique filename
-    const ext = file.name.split(".").pop()?.toLowerCase() || "pptx";
-    const fileName = `${randomUUID()}.${ext}`;
-    const filePath = join(UPLOAD_DIR, fileName);
-
-    // Convert file to buffer and save
+    // Convert file to buffer for ImageKit
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
 
-    // Return public URL
-    const fileUrl = `/uploads/ppts/${fileName}`;
+    // Upload to ImageKit
+    const uploadResponse = await imagekit.upload({
+      file: buffer,
+      fileName: `ppt_${Date.now()}_${file.name.replace(/\s+/g, '_')}`,
+      folder: "/ppts",
+      useUniqueFileName: true,
+    });
+
+    const fileUrl = uploadResponse.url;
 
     return NextResponse.json({
       success: true,
@@ -64,9 +55,9 @@ export async function POST(req: NextRequest) {
       fileName: file.name,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error("ImageKit PPT Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      { error: "Failed to upload file via ImageKit" },
       { status: 500 }
     );
   }

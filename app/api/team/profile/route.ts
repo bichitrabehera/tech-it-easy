@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { verifyTeamToken } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,11 +14,19 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    const teamData = await verifyTeamToken(token);
+    if (!teamData) {
+      return NextResponse.json(
+        { error: "Invalid session" },
+        { status: 401 }
+      );
+    }
     
     const { githubId, githubRepo } = await req.json();
     
     const team = await prisma.team.update({
-      where: { magicToken: token },
+      where: { id: teamData.teamId },
       data: { 
         githubId, 
         githubRepo 

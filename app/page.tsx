@@ -8,18 +8,30 @@ import About from "@/components/About";
 import Domains from "@/components/Domains";
 import TimeLine from "@/components/TimeLine";
 import Sponsors from "@/components/Sponsors";
-import Lenis from "lenis";
+import { useEffect } from "react";
 
 const Home = () => {
-  // Initialize Lenis
-  const lenis = new Lenis({
-    autoRaf: true,
-    smoothWheel: true,
-    });
+  useEffect(() => {
+    let destroyed = false;
+    let lenisInstance: { destroy?: () => void } | null = null;
 
-  lenis.on("scroll", (e) => {
-    console.log(e);
-  });
+    const setupLenis = async () => {
+      const { default: Lenis } = await import("lenis");
+      if (destroyed) return;
+
+      lenisInstance = new Lenis({
+        autoRaf: true,
+        smoothWheel: true,
+      });
+    };
+
+    setupLenis();
+
+    return () => {
+      destroyed = true;
+      lenisInstance?.destroy?.();
+    };
+  }, []);
 
   return (
     <div className="">

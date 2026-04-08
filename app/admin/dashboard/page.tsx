@@ -9,9 +9,11 @@ import {
   LayoutDashboard,
   ShieldCheck,
   ChevronDown,
-  Activity
+  Activity,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import CustomAlert from "@/components/ui/CustomAlert";
 import {
   ADMIN_ACTION_APPROVE,
   ADMIN_ACTION_CONFIRM_PAYMENT,
@@ -43,6 +45,19 @@ export default function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    message: string;
+  }>({
+    isOpen: false,
+    type: "success",
+    message: "",
+  });
+
+  const showNotification = (type: "success" | "error", message: string) => {
+    setNotification({ isOpen: true, type, message });
+  };
 
   useEffect(() => {
     fetchTeams();
@@ -59,7 +74,7 @@ export default function AdminDashboardPage() {
         (t) =>
           t.teamName.toLowerCase().includes(query) ||
           t.leaderName.toLowerCase().includes(query) ||
-          t.leaderEmail.toLowerCase().includes(query)
+          t.leaderEmail.toLowerCase().includes(query),
       );
     }
     setFilteredTeams(filtered);
@@ -92,7 +107,7 @@ export default function AdminDashboardPage() {
 
   const sendTeamEmail = async (
     teamId: string,
-    type: "selected" | "rejected" | "payment_confirmed"
+    type: "selected" | "rejected" | "payment_confirmed",
   ) => {
     const response = await fetch(`/api/admin/teams/${teamId}/email`, {
       method: "POST",
@@ -113,8 +128,9 @@ export default function AdminDashboardPage() {
 
   const handleStatusUpdate = async (
     teamId: string,
-    status: "SELECTED" | "REJECTED"
+    status: "SELECTED" | "REJECTED",
   ) => {
+    console.log(`[DEBUG] Updating status for team ${teamId} to ${status}`);
     setActionLoading(teamId);
     try {
       const response = await fetch(`/api/admin/teams/${teamId}`, {
@@ -122,17 +138,36 @@ export default function AdminDashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
+
+      console.log(`[DEBUG] Update Response Status: ${response.status}`);
+
       if (response.ok) {
         if (status === "SELECTED") {
+          console.log(`[DEBUG] Triggering selection email...`);
           const emailSent = await sendTeamEmail(teamId, "selected");
           if (!emailSent) {
-            alert("Team selected, but the payment email could not be sent.");
+            console.error(`[DEBUG] Email trigger failed for ${teamId}`);
+            showNotification(
+              "error",
+              "Team selected, but the payment email could not be sent. Please check SMTP settings.",
+            );
           }
         }
         await fetchTeams();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(`[DEBUG] Update Error:`, errorData);
+        showNotification(
+          "error",
+          `Status Update Failed (${response.status}): ${errorData.error || "Server Core Error"}`,
+        );
       }
-    } catch {
-      console.error("Failed to update status");
+    } catch (err) {
+      console.error("[DEBUG] Network/Execution Error:", err);
+      showNotification(
+        "error",
+        "Terminal Sync Error: Fatal exception in activation pipe. Check console.",
+      );
     } finally {
       setActionLoading(null);
     }
@@ -148,12 +183,15 @@ export default function AdminDashboardPage() {
       });
       const emailSent = await sendTeamEmail(teamId, "payment_confirmed");
       if (!emailSent) {
-        alert("Payment was confirmed, but the dashboard email could not be sent.");
+        showNotification(
+          "error",
+          "Payment was confirmed, but the dashboard email could not be sent.",
+        );
       }
       await fetchTeams();
-      alert("Payment confirmed!");
+      showNotification("success", "Payment confirmed!");
     } catch {
-      alert("Failed to confirm payment");
+      showNotification("error", "Failed to confirm payment");
     } finally {
       setActionLoading(null);
     }
@@ -187,7 +225,9 @@ export default function AdminDashboardPage() {
       <div className="min-h-screen bg-[#020617] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="animate-spin text-blue-500" size={32} />
-          <p className="text-blue-200/50 text-sm font-medium tracking-widest uppercase">Initializing Dashboard...</p>
+          <p className="text-blue-200/50 text-sm font-medium tracking-widest uppercase">
+            Initializing Dashboard...
+          </p>
         </div>
       </div>
     );
@@ -202,6 +242,17 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 flex">
+      <CustomAlert
+        isOpen={notification.isOpen}
+        type={notification.type}
+        message={notification.message}
+        onClose={() =>
+          setNotification((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
+      />
 
       {/* SIDEBAR */}
       <aside className="w-64 border-r border-slate-800/50 bg-[#020617] h-screen sticky top-0 hidden lg:flex flex-col p-6">
@@ -211,16 +262,24 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <h1 className="font-bold text-lg tracking-tight">SuperNova</h1>
-            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Admin Hub</p>
+            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">
+              Admin Hub
+            </p>
           </div>
         </div>
 
         <nav className="flex-1 space-y-2">
-          <Link href="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 bg-blue-600/10 text-blue-400 rounded-xl font-medium transition-all">
+          <Link
+            href="/admin/dashboard"
+            className="flex items-center gap-3 px-4 py-3 bg-blue-600/10 text-blue-400 rounded-xl font-medium transition-all"
+          >
             <LayoutDashboard size={18} />
             Teams Feed
           </Link>
-          <Link href="/admin/repos" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-xl font-medium transition-all group">
+          <Link
+            href="/admin/repos"
+            className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-xl font-medium transition-all group"
+          >
             <Activity className="group-hover:text-blue-400" size={18} />
             Repo Monitor
           </Link>
@@ -244,7 +303,9 @@ export default function AdminDashboardPage() {
           <div>
             <h2 className="text-xl font-bold tracking-tight">{ADMIN_TITLE}</h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-blue-500 uppercase font-bold tracking-widest">{ADMIN_SUBTITLE}</span>
+              <span className="text-[10px] text-blue-500 uppercase font-bold tracking-widest">
+                {ADMIN_SUBTITLE}
+              </span>
             </div>
           </div>
 
@@ -262,14 +323,41 @@ export default function AdminDashboardPage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {[
-              { label: "All", value: stats.total, color: "text-blue-500", bg: "bg-blue-500/10" },
-              { label: "Pending", value: stats.pending, color: "text-amber-500", bg: "bg-amber-500/10" },
-              { label: "Selected", value: stats.selected, color: "text-blue-400", bg: "bg-blue-400/10" },
-              { label: "Rejected", value: stats.rejected, color: "text-slate-500", bg: "bg-slate-800" },
+              {
+                label: "All",
+                value: stats.total,
+                color: "text-blue-500",
+                bg: "bg-blue-500/10",
+              },
+              {
+                label: "Pending",
+                value: stats.pending,
+                color: "text-amber-500",
+                bg: "bg-amber-500/10",
+              },
+              {
+                label: "Selected",
+                value: stats.selected,
+                color: "text-blue-400",
+                bg: "bg-blue-400/10",
+              },
+              {
+                label: "Rejected",
+                value: stats.rejected,
+                color: "text-slate-500",
+                bg: "bg-slate-800",
+              },
             ].map((s, i) => (
-              <div key={i} className="bg-slate-900/40 border border-slate-800/50 p-6 rounded-2xl">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{s.label}</p>
-                <p className="text-4xl font-bold text-white tracking-tighter">{s.value}</p>
+              <div
+                key={i}
+                className="bg-slate-900/40 border border-slate-800/50 p-6 rounded-2xl"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+                  {s.label}
+                </p>
+                <p className="text-4xl font-bold text-white tracking-tighter">
+                  {s.value}
+                </p>
               </div>
             ))}
           </div>
@@ -277,7 +365,10 @@ export default function AdminDashboardPage() {
           {/* Filters Bar */}
           <div className="flex flex-col lg:flex-row gap-4 mb-8">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
+                size={16}
+              />
               <input
                 type="text"
                 value={searchQuery}
@@ -299,7 +390,10 @@ export default function AdminDashboardPage() {
                   <option value="SELECTED">Selected</option>
                   <option value="REJECTED">Rejected</option>
                 </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" size={14} />
+                <ChevronDown
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none"
+                  size={14}
+                />
               </div>
             </div>
           </div>
@@ -310,23 +404,45 @@ export default function AdminDashboardPage() {
               <table className="w-full text-left text-[11px]">
                 <thead>
                   <tr className="bg-slate-800/40 border-b border-slate-800/60 transition-colors">
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">ID</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Team</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Leader</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Email</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Status</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">Payment</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500 text-right">Actions</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">
+                      ID
+                    </th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">
+                      Team
+                    </th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">
+                      Leader
+                    </th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">
+                      Email
+                    </th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">
+                      PPT
+                    </th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500">
+                      Payment
+                    </th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-[0.15em] text-slate-500 text-right">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/50">
                   {filteredTeams.map((team) => (
-                    <tr key={team.id} className="hover:bg-slate-800/20 transition-all group">
+                    <tr
+                      key={team.id}
+                      className="hover:bg-slate-800/20 transition-all group"
+                    >
                       <td className="px-6 py-5 font-mono text-slate-600 text-[10px]">
                         {team.id.slice(0, 8)}
                       </td>
                       <td className="px-6 py-5">
-                        <span className="font-bold text-slate-200 uppercase tracking-tight">{team.teamName}</span>
+                        <span className="font-bold text-slate-200 uppercase tracking-tight">
+                          {team.teamName}
+                        </span>
                       </td>
                       <td className="px-6 py-5 text-slate-400">
                         {team.leaderName}
@@ -335,13 +451,35 @@ export default function AdminDashboardPage() {
                         {team.leaderEmail}
                       </td>
                       <td className="px-6 py-5">
+                        {team.pptUrl ? (
+                          <a
+                            href={team.pptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-md border border-red-500/20 transition-all text-[10px] font-bold uppercase tracking-widest"
+                          >
+                            <ExternalLink size={12} />
+                            View PPT
+                          </a>
+                        ) : (
+                          <span className="text-slate-800 uppercase font-black">
+                            —
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-5">
                         {getStatusBadge(team.status)}
                       </td>
                       <td className="px-6 py-5">
                         {team.status === "SELECTED" ? (
                           <div className="flex flex-col gap-1.5">
-                            <span className={`font-bold uppercase tracking-widest text-[9px] ${team.paymentStatus === "PAID" ? "text-blue-400" : "text-slate-600"
-                              }`}>
+                            <span
+                              className={`font-bold uppercase tracking-widest text-[9px] ${
+                                team.paymentStatus === "PAID"
+                                  ? "text-blue-400"
+                                  : "text-slate-600"
+                              }`}
+                            >
                               [{team.paymentStatus}]
                             </span>
                             {team.paymentProof && (
@@ -355,7 +493,10 @@ export default function AdminDashboardPage() {
                                   alt="Receipt"
                                   className="w-16 h-10 object-cover rounded border border-slate-800 group-hover/img:border-blue-500/50 transition-all"
                                   onError={(e) => {
-                                    (e.target as HTMLImageElement).parentElement!.innerText = "VIEW ATTACHMENT";
+                                    (
+                                      e.target as HTMLImageElement
+                                    ).parentElement!.innerText =
+                                      "VIEW ATTACHMENT";
                                   }}
                                 />
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center text-[7px] font-bold uppercase tracking-[0.2em] transition-opacity rounded text-white">
@@ -365,7 +506,9 @@ export default function AdminDashboardPage() {
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-800 uppercase font-black">—</span>
+                          <span className="text-slate-800 uppercase font-black">
+                            —
+                          </span>
                         )}
                       </td>
                       <td className="px-6 py-5">
@@ -373,14 +516,20 @@ export default function AdminDashboardPage() {
                           {team.status === "PENDING" && (
                             <>
                               <button
-                                onClick={() => handleStatusUpdate(team.id, "SELECTED")}
+                                onClick={() =>
+                                  handleStatusUpdate(team.id, "SELECTED")
+                                }
                                 disabled={actionLoading === team.id}
                                 className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded border border-blue-600/30 transition-all disabled:opacity-20"
                               >
-                                {actionLoading === team.id ? "Processing..." : ADMIN_ACTION_APPROVE}
+                                {actionLoading === team.id
+                                  ? "Processing..."
+                                  : ADMIN_ACTION_APPROVE}
                               </button>
                               <button
-                                onClick={() => handleStatusUpdate(team.id, "REJECTED")}
+                                onClick={() =>
+                                  handleStatusUpdate(team.id, "REJECTED")
+                                }
                                 disabled={actionLoading === team.id}
                                 className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-slate-800/50 text-slate-500 hover:bg-slate-700 hover:text-white rounded border border-slate-700/50 transition-all disabled:opacity-20"
                               >
@@ -389,15 +538,18 @@ export default function AdminDashboardPage() {
                             </>
                           )}
 
-                          {team.status === "SELECTED" && team.paymentStatus === "UNPAID" && (
-                            <button
-                              onClick={() => handleConfirmPayment(team.id)}
-                              disabled={actionLoading === `${team.id}-payment`}
-                              className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-blue-600 text-white hover:bg-blue-500 rounded transition-all shadow-lg shadow-blue-600/20 disabled:opacity-20"
-                            >
-                              {ADMIN_ACTION_CONFIRM_PAYMENT}
-                            </button>
-                          )}
+                          {team.status === "SELECTED" &&
+                            team.paymentStatus === "UNPAID" && (
+                              <button
+                                onClick={() => handleConfirmPayment(team.id)}
+                                disabled={
+                                  actionLoading === `${team.id}-payment`
+                                }
+                                className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-blue-600 text-white hover:bg-blue-500 rounded transition-all shadow-lg shadow-blue-600/20 disabled:opacity-20"
+                              >
+                                {ADMIN_ACTION_CONFIRM_PAYMENT}
+                              </button>
+                            )}
 
                           {team.paymentProof && (
                             <a
@@ -407,16 +559,6 @@ export default function AdminDashboardPage() {
                               className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-600 hover:text-blue-400 transition-all border border-slate-800 hover:border-blue-500/20 rounded"
                             >
                               {ADMIN_ACTION_VIEW_PROOF}
-                            </a>
-                          )}
-
-                          {team.pptUrl && (
-                            <a
-                              href={team.pptUrl}
-                              target="_blank"
-                              className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-600 hover:text-blue-400 transition-all border border-slate-800 hover:border-blue-500/20 rounded"
-                            >
-                              {ADMIN_ACTION_VIEW_PPT}
                             </a>
                           )}
                         </div>
@@ -429,7 +571,9 @@ export default function AdminDashboardPage() {
 
             {filteredTeams.length === 0 && (
               <div className="py-24 text-center">
-                <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em]">Database Stream Restricted: No Matching Records</p>
+                <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em]">
+                  Database Stream Restricted: No Matching Records
+                </p>
               </div>
             )}
           </div>

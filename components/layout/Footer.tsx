@@ -37,7 +37,7 @@ const Footer = () => {
                   alt="Deadpool"
                   width={300}
                   height={300}
-                  className="w-120 sm:w-140 md:w-195 h-auto object-contain relative z-10 "
+                  className="w-120 sm:w-170 md:w-195 h-auto object-contain relative z-10 "
                 />
               </div>
               <h2 className="font-[Boldonse] text-4xl sm:text-4xl md:text-4xl leading-tight text-[#ffe2e2] uppercase">

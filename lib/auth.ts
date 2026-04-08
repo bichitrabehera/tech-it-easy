@@ -10,9 +10,18 @@ const ADMIN_JWT_SECRET = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET
 );
 
+const TEAM_JWT_SECRET = new TextEncoder().encode(
+  process.env.TEAM_JWT_SECRET || process.env.ADMIN_JWT_SECRET
+);
+
 export interface AdminTokenPayload {
   adminId: string;
   email: string;
+}
+
+export interface TeamTokenPayload {
+  teamId: string;
+  leaderEmail: string;
 }
 
 export async function verifyAdminToken(token: string): Promise<AdminTokenPayload | null> {
@@ -33,6 +42,26 @@ export async function createAdminToken(payload: AdminTokenPayload): Promise<stri
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(ADMIN_JWT_SECRET);
+}
+
+export async function verifyTeamToken(token: string): Promise<TeamTokenPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, TEAM_JWT_SECRET);
+    return {
+      teamId: payload.teamId as string,
+      leaderEmail: payload.leaderEmail as string,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function createTeamToken(payload: TeamTokenPayload): Promise<string> {
+  return new SignJWT({ teamId: payload.teamId, leaderEmail: payload.leaderEmail })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("7d")
+    .sign(TEAM_JWT_SECRET);
 }
 
 export function hashPassword(password: string): string {

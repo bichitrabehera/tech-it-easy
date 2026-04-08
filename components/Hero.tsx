@@ -21,7 +21,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex flex-col  items-center justify-center overflow-hidden bg-[#0a0000] text-white pt-32 pb-24 md:pt-0 md:pb-0"
+      className="relative min-h-screen flex flex-col  items-center justify-center overflow-hidden bg-[#0a0000] text-white py-10"
     >
       {/* BACKGROUND GRADIENTS */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#1b0303] via-[#0a0000] to-black z-0" />
@@ -90,7 +90,7 @@ const Hero = () => {
           </div>
 
           {/* BUTTON */}
-          <Button text="Register Now" />
+          <Button text="Register Now" href="/register" />
         </div>
       </div>
       <motion.div
@@ -110,7 +110,7 @@ const Hero = () => {
     cursor-grab active:cursor-grabbing
   "
       >
-        <div className="relative bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl p-2 w-full max-w-[400px] md:w-auto">
+        <div className="relative bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl p-2 w-full md:w-auto">
           <div className="absolute inset-0 bg-red-600/10 blur-3xl rounded-xl pointer-events-none" />
 
           <div className="relative z-10">

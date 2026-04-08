@@ -1,10 +1,21 @@
-import { prisma } from "@/lib/prisma";
-import { hashPassword } from "@/lib/auth";
+require('dotenv').config();
+const { PrismaClient } = require("@prisma/client");
+const { PrismaPg } = require("@prisma/adapter-pg");
+const bcrypt = require("bcryptjs");
+
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Create default admin
-  const email = "admin@supernova.com";
-  const password = "admin123"; // Change this in production
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error("Missing ADMIN_EMAIL or ADMIN_PASSWORD in environment");
+  }
   
   const existingAdmin = await prisma.admin.findUnique({
     where: { email },
@@ -18,14 +29,13 @@ async function main() {
   await prisma.admin.create({
     data: {
       email,
-      password: hashPassword(password),
+      password: bcrypt.hashSync(password, 10),
     },
   });
   
   console.log("Admin created successfully:");
   console.log(`Email: ${email}`);
-  console.log(`Password: ${password}`);
-  console.log("Please change the password after first login!");
+  console.log("Password: [hidden]");
 }
 
 main()

@@ -19,10 +19,12 @@ import {
   ChevronRight,
   Activity,
   Terminal,
-  LogOut
+  LogOut,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
-import { DEFAULT_RAZORPAY_PAYMENT_URL, PAYMENT_AMOUNT_INR, PAYMENT_UPI_ID } from "@/lib/constants";
+import { motion, AnimatePresence } from "framer-motion";
+import { HACKATHON_EVENT_NAME, PAYMENT_AMOUNT_INR, PAYMENT_UPI_ID } from "@/lib/constants";
 
 // Custom GitHub icon SVG to match standard
 const GithubIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -44,6 +46,7 @@ interface Team {
   idProofUrl: string | null;
   paymentStatus: "UNPAID" | "PAID";
   paymentProof: string | null;
+  paymentLink: string | null;
   createdAt: string;
 }
 
@@ -51,6 +54,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [team, setTeam] = useState<Team | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [githubId, setGithubId] = useState("");
   const [githubRepo, setGithubRepo] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -62,13 +66,16 @@ export default function DashboardPage() {
         const response = await fetch("/api/team/me");
         if (response.ok) {
           const data = await response.json();
-          if (data.team.paymentStatus !== "PAID") {
-            router.replace("/payment");
-            return;
-          }
           setTeam(data.team);
           setGithubId(data.team.githubId || "");
           setGithubRepo(data.team.githubRepo || "");
+          
+          // Show welcome if newly loaded
+          const hasSeenWelcome = sessionStorage.getItem("hasSeenWelcome");
+          if (!hasSeenWelcome) {
+            setShowWelcome(true);
+            sessionStorage.setItem("hasSeenWelcome", "true");
+          }
         } else {
           router.push("/login");
         }
@@ -180,6 +187,61 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 selection:bg-blue-500/30 overflow-x-hidden">
       
+      {/* WELCOME OVERLAY */}
+      <AnimatePresence>
+        {showWelcome && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300, delay: 0.1 }}
+              className="max-w-2xl w-full bg-slate-900/50 border border-white/10 p-12 rounded-[40px] text-center relative overflow-hidden group"
+            >
+              {/* Decorative background glow */}
+              <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full" />
+              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-red-600/20 blur-[100px] rounded-full" />
+
+              <div className="relative z-10">
+                <div className="inline-flex items-center justify-center p-5 rounded-3xl bg-blue-600/20 border border-blue-500/20 mb-8">
+                  <Zap className="text-blue-400 w-10 h-10" />
+                </div>
+                
+                <h2 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase mb-4">
+                  Welcome to the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-red-500">SuperNova</span>
+                </h2>
+                
+                <p className="text-xl text-white/50 font-light mb-12 max-w-lg mx-auto leading-relaxed italic">
+                  "The universe is now at your fingertips, {team.leaderName}. Your team <span className="text-white font-bold">{team.teamName}</span> has been successfully authenticated."
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 text-left">
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-1">Status</p>
+                    <p className="text-sm font-bold">{team.paymentStatus === 'PAID' ? 'Fully Activated' : 'Pending Activation'}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1">Access Tier</p>
+                    <p className="text-sm font-bold">Level 1 Developer</p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setShowWelcome(false)}
+                  className="w-full h-16 bg-white text-black rounded-2xl font-black uppercase tracking-[0.3em] italic hover:scale-[1.02] active:scale-98 transition-all shadow-2xl"
+                >
+                  Enter Command Center
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* HEADER SECTION */}
       <header className="h-20 border-b border-slate-800/50 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto h-full px-6 flex items-center justify-between">
@@ -326,119 +388,106 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* PROJECT ACTIVATION: PAYMENT & PROOF */}
-            {team.status === "SELECTED" && (
-              <div className="bg-slate-900/40 border border-slate-800/50 p-8 rounded-3xl relative overflow-hidden">
-                <div className="flex items-center gap-4 mb-10">
-                   <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-400">
-                      <CreditCard size={24} />
-                   </div>
+    {/* PROJECT ACTIVATION: PAYMENT & PROOF */}
+    {team.status === "SELECTED" && (
+      <div className="bg-slate-900/40 border border-slate-800/50 p-8 rounded-3xl relative overflow-hidden">
+        <div className="flex items-center gap-4 mb-10">
+           <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-400">
+              <CreditCard size={24} />
+           </div>
+           <div>
+              <h3 className="text-xl font-bold tracking-tight text-white uppercase">Project Activation</h3>
+              <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] mt-1 italic">Level 2 Clearance Requirements</p>
+           </div>
+        </div>
+
+        {team.paymentStatus === "UNPAID" ? (
+          <div className="space-y-8">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-8 bg-blue-600/[0.03] border border-blue-500/10 rounded-3xl space-y-6">
                    <div>
-                      <h3 className="text-xl font-bold tracking-tight text-white uppercase">Project Activation</h3>
-                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] mt-1 italic">Level 2 Clearance Requirements</p>
+                      <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Registration Fee</p>
+                      <div className="text-5xl font-black text-white mb-2 tracking-tighter italic">
+                         ₹{PAYMENT_AMOUNT_INR}
+                      </div>
+                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest italic leading-none">Net total amount per team</p>
+                   </div>
+                   
+                   <div className="pt-4 space-y-4">
+                      <div className="p-4 bg-[#020617] border border-slate-800/80 rounded-2xl flex items-center justify-between">
+                         <p className="text-sm font-mono font-bold text-blue-400 truncate mr-4">{PAYMENT_UPI_ID}</p>
+                         <button 
+                           onClick={() => {
+                             navigator.clipboard.writeText(PAYMENT_UPI_ID || "");
+                             alert("UPI ID Copied to Clipboard");
+                           }}
+                           className="px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest rounded-md border border-blue-500/20 transition-all active:scale-95"
+                         >
+                           Copy
+                         </button>
+                      </div>
+                      <div className="flex justify-center p-4 bg-white/5 rounded-2xl">
+                         <img 
+                           src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`upi://pay?pa=${PAYMENT_UPI_ID}&pn=${encodeURIComponent(HACKATHON_EVENT_NAME)}&am=${PAYMENT_AMOUNT_INR}&cu=INR`)}`} 
+                           alt="Payment QR" 
+                           className="w-32 h-32 grayscale brightness-125 rounded-lg"
+                         />
+                      </div>
                    </div>
                 </div>
 
-                {team.paymentStatus === "UNPAID" ? (
-                  <div className="space-y-8">
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Option 1: Razorpay */}
-                        <div className="p-8 bg-blue-600/[0.03] border border-blue-500/10 rounded-3xl flex flex-col justify-between group hover:border-blue-500/30 transition-all">
-                           <div>
-                              <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Registration Credit</p>
-                              <div className="text-4xl font-black text-white mb-8 tracking-tighter">
-                                 ₹{PAYMENT_AMOUNT_INR}
-                                 <span className="text-xs font-medium text-slate-600 ml-2 tracking-normal uppercase">Cycle fee</span>
-                              </div>
-                           </div>
-                          <a 
-                            href={DEFAULT_RAZORPAY_PAYMENT_URL}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-                           >
-                              Initialize Payment
-                              <ExternalLink size={14} />
-                           </a>
+                <div className="flex flex-col gap-6">
+                   <div className="flex-1 p-8 bg-slate-900 border border-slate-800 rounded-3xl space-y-6">
+                      <div className="space-y-2">
+                         <h4 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Evidence Submission</h4>
+                         <p className="text-[10px] text-slate-500 font-medium">The Core will verify your transaction within 24 hours.</p>
+                      </div>
+                      
+                      <div className="relative">
+                         <input
+                            type="file"
+                            id="payment-proof"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleProofUpload}
+                            disabled={isUploading}
+                         />
+                         <label
+                            htmlFor="payment-proof"
+                            className={`flex flex-col items-center justify-center gap-4 w-full py-8 border-2 border-dashed border-slate-800 bg-slate-800/20 rounded-3xl transition-all ${isUploading ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/[0.02]'}`}
+                         >
+                            <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400">
+                               {isUploading ? <Loader2 className="animate-spin" /> : <FileUp size={24} />}
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                               {team.paymentProof ? "Update Receipt" : "Upload Verification Receipt"}
+                            </span>
+                         </label>
+                      </div>
+
+                      {team.paymentProof && (
+                        <div className="flex items-center gap-3 px-4 py-3 bg-blue-600/5 border border-blue-500/20 rounded-xl">
+                          <CheckCircle className="w-4 h-4 text-blue-400" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-blue-400">Artifact Received // Verification Pending</span>
                         </div>
-
-                        {/* Option 2: UPI */}
-                        <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-3xl space-y-6">
-                           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Static Terminal IP (UPI)</p>
-                           <div className="p-4 bg-[#020617] border border-slate-800/80 rounded-2xl">
-                              <p className="text-[9px] text-slate-600 uppercase font-bold mb-1">Direct Identity:</p>
-                              <p className="text-xs font-mono font-bold text-slate-300 break-all">{PAYMENT_UPI_ID}</p>
-                           </div>
-                           <p className="text-[9px] text-slate-600 font-medium leading-relaxed italic uppercase">
-                              Submit required credit (₹{PAYMENT_AMOUNT_INR}) to the identity above and capture the visual log.
-                           </p>
-                        </div>
-                     </div>
-
-                     {/* Upload Section */}
-                     <div className="p-10 bg-slate-900 border border-slate-800 rounded-3xl">
-                        <div className="flex flex-col md:flex-row gap-8">
-                           <div className="flex-1 space-y-6">
-                              <div>
-                                 <h4 className="text-sm font-bold text-slate-200">Evidence Submission</h4>
-                                 <p className="text-xs text-slate-500 mt-1">Upload your payment record for terminal verification.</p>
-                              </div>
-                              
-                              <div className="relative">
-                                 <input
-                                    type="file"
-                                    id="payment-proof"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={handleProofUpload}
-                                 />
-                                 <label
-                                    htmlFor="payment-proof"
-                                    className="flex flex-col items-center justify-center gap-4 w-full py-10 border-2 border-dashed border-slate-800 bg-slate-800/20 cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/[0.02] transition-all rounded-3xl"
-                                 >
-                                    <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-blue-400">
-                                       <FileUp size={24} />
-                                    </div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                       {team.paymentProof ? "Resubmit Receipt" : "Upload Verification Receipt"}
-                                    </span>
-                                 </label>
-                              </div>
-                           </div>
-
-                           <div className="md:w-px bg-slate-800 h-px md:h-auto self-stretch opacity-50" />
-
-                           <div className="flex-1 flex flex-col justify-center space-y-6">
-                              <div className="space-y-2">
-                                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest leading-relaxed">
-                                    Verification Priority: <span className="text-blue-500 underline decoration-blue-500/30 underline-offset-4">HIGH</span>
-                                 </p>
-                                 <p className="text-[9px] text-slate-500 leading-relaxed font-medium">
-                                    Verification logs are usually validated within a 24-hour window by the SuperNova Core.
-                                 </p>
-                              </div>
-                              
-                              <div className="flex items-center gap-3 text-xs">
-                                 <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                                 <span className="font-bold text-slate-400 tracking-tight uppercase tracking-widest text-[9px]">Awaiting Manual Validation</span>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-                ) : (
-                  <div className="py-20 flex flex-col items-center justify-center text-center space-y-6 bg-blue-600/[0.02] rounded-3xl border border-blue-500/10">
-                    <div className="w-24 h-24 bg-blue-600 text-white rounded-3xl flex items-center justify-center shadow-xl shadow-blue-600/30 transform rotate-3">
-                      <CheckCircle size={48} />
-                    </div>
-                    <div>
-                      <h4 className="text-3xl font-black text-white tracking-tighter">OPERATIONAL ACCESS GRANTED</h4>
-                      <p className="text-[11px] font-bold text-blue-400/60 uppercase tracking-[0.4em] mt-4">Security Phase Fully Authenticated</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+                      )}
+                   </div>
+                </div>
+             </div>
+          </div>
+        ) : (
+          <div className="py-20 flex flex-col items-center justify-center text-center space-y-6 bg-blue-600/[0.02] rounded-3xl border border-blue-500/10">
+            <div className="w-24 h-24 bg-blue-600 text-white rounded-3xl flex items-center justify-center shadow-xl shadow-blue-600/30 transform rotate-3">
+              <CheckCircle size={48} />
+            </div>
+            <div>
+              <h4 className="text-3xl font-black text-white tracking-tighter">OPERATIONAL ACCESS GRANTED</h4>
+              <p className="text-[11px] font-bold text-blue-400/60 uppercase tracking-[0.4em] mt-4">Security Phase Fully Authenticated</p>
+            </div>
+          </div>
+        )}
+      </div>
+    )}
             
             {/* GITHUB/DEVELOPER CREDENTIALS */}
             {team.paymentStatus === "PAID" && (

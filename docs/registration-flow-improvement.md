@@ -65,7 +65,7 @@ ALTER TABLE Team ADD COLUMN paymentDate TIMESTAMP;
 ### API Endpoints to Update
 1. `/api/team/register` - Simplified registration
 2. `/api/team/status` - Real-time status checking
-3. `/api/payment/create-link` - Improved payment flow
+3. Payment flow now uses direct UPI + proof upload verification
 4. Remove `/api/upload/payment-proof` - No longer needed
 
 ### Frontend Components to Update

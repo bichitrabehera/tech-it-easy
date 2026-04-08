@@ -1,52 +1,48 @@
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@supernova.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+require('dotenv').config();
+const { PrismaClient } = require("@prisma/client");
+const { PrismaPg } = require("@prisma/adapter-pg");
+const bcrypt = require("bcryptjs");
 
-if (!ADMIN_PASSWORD) {
-  console.error("ERROR: ADMIN_PASSWORD environment variable is required");
-  console.error("Set it with: set ADMIN_PASSWORD=your-secure-password");
-  process.exit(1);
-}
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const { PrismaClient } = await import("@prisma/client");
-  const { PrismaLibSql } = await import("@prisma/adapter-libsql");
-  const { default: bcrypt } = await import("bcryptjs");
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
 
-  const adapter = new PrismaLibSql({
-    url: process.env.DATABASE_URL || "file:./dev.db",
-  });
-
-  const prisma = new PrismaClient({ adapter });
-
-  try {
-    const existingAdmin = await prisma.admin.findUnique({
-      where: { email: ADMIN_EMAIL },
-    });
-
-    if (existingAdmin) {
-      console.log("Admin already exists");
-      return;
-    }
-
-    const hashedPassword = bcrypt.hashSync(ADMIN_PASSWORD, 12);
-
-    await prisma.admin.create({
-      data: {
-        email: ADMIN_EMAIL,
-        password: hashedPassword,
-      },
-    });
-
-    console.log("Admin created successfully:");
-    console.log(`Email: ${ADMIN_EMAIL}`);
-    console.log("Password: [HIDDEN - set via ADMIN_PASSWORD env var]");
-  } finally {
-    await prisma.$disconnect();
+  if (!email || !password) {
+    throw new Error("Missing ADMIN_EMAIL or ADMIN_PASSWORD in environment");
   }
+  
+  const existingAdmin = await prisma.admin.findUnique({
+    where: { email },
+  });
+  
+  if (existingAdmin) {
+    console.log("Admin already exists");
+    return;
+  }
+  
+  await prisma.admin.create({
+    data: {
+      email,
+      password: bcrypt.hashSync(password, 10),
+    },
+  });
+  
+  console.log("Admin created successfully:");
+  console.log(`Email: ${email}`);
+  console.log("Password: [hidden]");
 }
 
 main()
   .catch((e) => {
     console.error(e);
     process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
   });

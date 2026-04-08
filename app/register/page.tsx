@@ -1,530 +1,547 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Trash2, Upload, Loader2, X, Sparkles, Users, Mail, User, Zap, CheckCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  Users,
+  Mail,
+  Zap,
+  Upload,
+  ArrowLeft,
+  Smartphone,
+  Globe,
+  Star,
+} from "lucide-react";
 import Link from "next/link";
-import { REGISTRATION_STEPS, REGISTRATION_SUBTITLE, REGISTRATION_TITLE } from "@/lib/constants";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  REGISTRATION_TITLE,
+} from "@/lib/constants";
 
 const schema = z.object({
-  teamName: z.string().min(2, "Team name must be at least 2 characters"),
-  leaderName: z.string().min(2, "Leader name must be at least 2 characters"),
-  leaderEmail: z.string().email("Invalid email address"),
-  leaderPhone: z.string().min(10, "Phone number must be at least 10 digits"),
-  members: z.array(z.object({
-    name: z.string().min(1, "Member name is required"),
-    email: z.string().email("Invalid email address"),
-    phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  })),
+  teamName: z.string().trim().min(2, "Team name must be at least 2 characters"),
+  leaderName: z.string().trim().min(2, "Leader name must be at least 2 characters"),
+  leaderEmail: z.string().trim().email("Invalid email address"),
+  leaderPhone: z
+    .string()
+    .trim()
+    .regex(/^\d{10,15}$/, "Phone number must be 10 to 15 digits"),
+  driveLink: z
+    .string()
+    .trim()
+    .url("Enter a valid Google Drive link")
+    .refine((value) => value.includes("drive.google.com"), {
+      message: "Please provide a Google Drive link",
+    }),
+  members: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1, "Member name is required"),
+        email: z.string().trim().email("Invalid email address"),
+        phone: z
+          .string()
+          .trim()
+          .regex(/^\d{10,15}$/, "Phone number must be 10 to 15 digits"),
+      }),
+    )
+    .min(1, "At least one member is required"),
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function RegisterPage() {
-  const [members, setMembers] = useState<Array<{ name: string; email: string; phone: string }>>([{ name: "", email: "", phone: "" }]);
-  const [pptFile, setPptFile] = useState<File | null>(null);
-  const [pptUrl, setPptUrl] = useState<string | null>(null);
-  const [isUploading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const [members, setMembers] = useState([{ name: "", email: "", phone: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [autoSaveStatus, setAutoSaveStatus] = useState<string>("");
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [autoSaveStatus] = useState("");
 
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
+      teamName: "",
+      leaderName: "",
+      leaderEmail: "",
+      leaderPhone: "",
+      driveLink: "",
       members: [{ name: "", email: "", phone: "" }],
     },
   });
 
-  // Load draft from localStorage
-  useEffect(() => {
-    const draft = localStorage.getItem("registration_draft");
-    if (draft) {
-      try {
-        const parsed = JSON.parse(draft);
-        setValue("teamName", parsed.teamName || "");
-        setValue("leaderName", parsed.leaderName || "");
-        setValue("leaderEmail", parsed.leaderEmail || "");
-        if (parsed.members?.length > 0) {
-          setMembers(parsed.members);
-          setValue("members", parsed.members);
-        }
-        if (parsed.pptUrl) setPptUrl(parsed.pptUrl);
-      } catch {
-        // Invalid draft
-      }
-    }
-  }, [setValue]);
-
-  // Auto-save to localStorage
-  const formValues = watch();
-  const debouncedSave = useCallback(() => {
-    const timeout = setTimeout(() => {
-      const draft = {
-        ...formValues,
-        members,
-        pptUrl,
-      };
-      localStorage.setItem("registration_draft", JSON.stringify(draft));
-      setAutoSaveStatus("Saved");
-      setTimeout(() => setAutoSaveStatus(""), 1000);
-    }, 2000);
-    return () => clearTimeout(timeout);
-  }, [formValues, members, pptUrl]);
-
-  useEffect(() => {
-    const cleanup = debouncedSave();
-    return cleanup;
-  }, [debouncedSave]);
-
   const handleAddMember = () => {
-    const newMembers = [...members, { name: "", email: "", phone: "" }];
-    setMembers(newMembers);
-    setValue("members", newMembers);
+    if (members.length < 3) {
+      const newMembers = [...members, { name: "", email: "", phone: "" }];
+      setMembers(newMembers);
+      setValue("members", newMembers, { shouldValidate: true });
+    }
   };
 
   const handleRemoveMember = (index: number) => {
     const newMembers = members.filter((_, i) => i !== index);
     setMembers(newMembers);
-    setValue("members", newMembers);
+    setValue("members", newMembers, { shouldValidate: true });
   };
 
-  const handleMemberChange = (index: number, field: 'name' | 'email' | 'phone', value: string) => {
-    const newMembers = members.map((m, i) => (i === index ? { ...m, [field]: value } : m));
+  const handleMemberChange = (
+    index: number,
+    field: "name" | "email" | "phone",
+    value: string,
+  ) => {
+    const newMembers = members.map((m, i) =>
+      i === index ? { ...m, [field]: value } : m,
+    );
     setMembers(newMembers);
-    setValue("members", newMembers);
+    setValue("members", newMembers, { shouldValidate: true });
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check file type
-    const allowedTypes = [
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-      "application/vnd.ms-powerpoint",
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      setMessage({ type: "error", text: "Only PPT / PPTX allowed" });
-      return;
-    }
-
-    // Check file size
-    if (file.size > 50 * 1024 * 1024) {
-      setMessage({ type: "error", text: "Size under 50MB only" });
-      return;
-    }
-
-    setPptFile(file);
-    setIsLoading(true);
-    setMessage(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/upload/ppt", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setPptUrl(data.url);
-        setMessage({ type: "success", text: "Asset uploaded" });
-      } else {
-        setMessage({ type: "error", text: data.error || "Network failure" });
-      }
-    } catch {
-      setMessage({ type: "error", text: "Upload failed" });
-    } finally {
-      setIsLoading(false);
-    }
+  const onInvalid = () => {
+    setMessage({
+      type: "error",
+      text: "Please fix the highlighted fields before submitting.",
+    });
   };
 
   const onSubmit = async (data: FormData) => {
     if (isSubmitting) return;
-
     setIsSubmitting(true);
     setMessage(null);
 
     try {
-      const formData = new FormData();
-      formData.append("teamName", data.teamName);
-      formData.append("leaderName", data.leaderName);
-      formData.append("leaderEmail", data.leaderEmail);
-      formData.append("leaderPhone", data.leaderPhone);
-      formData.append("members", JSON.stringify(members.filter(m => m.name.trim())));
-      if (pptUrl) formData.append("pptUrl", pptUrl);
+      const payload = new FormData();
+      payload.append("teamName", data.teamName);
+      payload.append("leaderName", data.leaderName);
+      payload.append("leaderEmail", data.leaderEmail);
+      payload.append("leaderPhone", data.leaderPhone);
+      payload.append("pptUrl", data.driveLink);
+      payload.append(
+        "members",
+        JSON.stringify(members.filter((m) => m.name.trim())),
+      );
 
       const response = await fetch("/api/team/register", {
         method: "POST",
-        body: formData,
+        body: payload,
       });
 
       const result = await response.json();
 
       if (result.success) {
-        setMessage({ type: "success", text: result.message || "Record created successfully" });
         localStorage.removeItem("registration_draft");
-        // Reset form
-        setMembers([{ name: "", email: "", phone: "" }]);
-        setPptFile(null);
-        setPptUrl(null);
+        router.push("/register/success");
       } else {
-        setMessage({ type: "error", text: result.error || "Entry Refused" });
+        setMessage({
+          type: "error",
+          text: result.error || "Transmission Refused. Check details.",
+        });
       }
     } catch {
-      setMessage({ type: "error", text: "Connection error" });
+      setMessage({
+        type: "error",
+        text: "Hyperlane Connection Lost. Try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0000] text-white relative overflow-hidden">
-      {/* BACKGROUND GRADIENTS */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1b0303] via-[#0a0000] to-black z-0" />
+    <div className="relative min-h-screen bg-[#020202] text-white selection:bg-red-500/30 overflow-x-hidden">
+      {/* Dynamic Background Elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(185,28,28,0.15)_0%,transparent_50%)]" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-red-900/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute top-1/4 left-[-100px] w-[300px] h-[300px] bg-white/5 blur-[100px] rounded-full" />
 
-      {/* VIGNETTE */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#000_100%)] z-0 opacity-90" />
-
-      {/* TECH GRID OVERLAY */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(220,38,38,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(220,38,38,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] z-0 pointer-events-none" />
-
-      {/* RED BACKLIGHTING */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 md:w-[800px] md:h-[800px] bg-red-600/10 rounded-full blur-3xl pointer-events-none z-0" />
-
-
-      <div className="relative z-10 max-w-2xl mx-auto px-6 py-12 md:py-20">
-        {/* Back Button */}
-        <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-12 transition-all duration-300 group">
-          <span className="text-xl transform group-hover:-translate-x-1 transition-transform duration-300">←</span>
-          <span className="text-xs font-medium uppercase tracking-wider leading-none mt-1">Portal Home</span>
-        </Link>
-
-        {/* Header */}
-        <div className="mb-16 text-center">
-
-          <h1 className="text-2xl md:text-7xl font-bold mb-6 font-[Boldonse] tracking-widest text-red-500 drop-shadow-[0_0_50px_rgba(220,0,0,0.4)] ">
-            {REGISTRATION_TITLE}
-          </h1>
-          <p className="text-lg text-white/80 max-w-md mx-auto tracking-widest">
-            {REGISTRATION_SUBTITLE}
-          </p>
-          <div className="mt-6 flex flex-col md:flex-row gap-3 justify-center text-[10px] uppercase tracking-[0.25em] text-white/55 font-bold">
-            {REGISTRATION_STEPS.map((step) => (
-              <span key={step} className="px-3 py-2 rounded-full border border-white/10 bg-white/5">
-                {step}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Message Display */}
-        {message && (
-          <div
-            className={`mb-10 p-6 rounded-xl border backdrop-blur-xl text-center transform transition-all duration-500 ${message.type === "success"
-              ? "bg-green-500/10 border-green-400/30 text-green-100 shadow-lg shadow-green-500/20"
-              : "bg-red-500/10 border-red-400/30 text-red-100 shadow-lg shadow-red-500/20"
-              }`}
-          >
-            <div className="flex items-center justify-center gap-3">
-              {message.type === "success" ? (
-                <CheckCircle className="w-5 h-5" />
-              ) : (
-                <X className="w-5 h-5" />
-              )}
-              <span className="font-medium uppercase tracking-[0.1em]">{message.text}</span>
-            </div>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Team Name */}
-          <div className="group">
-            <label className="flex items-center gap-2 text-sm font-medium text-white/80 mb-3">
-              <Users className="w-4 h-4" />
-              Team Name
-            </label>
-            <div className="relative">
-              <input
-                {...register("teamName")}
-                className="w-full px-6 py-4 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl focus:outline-none focus:border-red-500 focus:bg-[#08000a]/90 transition-all duration-300 placeholder:text-white/40 text-white"
-                placeholder="Enter your team name"
-              />
-              <div className="absolute inset-0 rounded-xl bg-red-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-            </div>
-            {errors.teamName && (
-              <p className="text-red-400 text-sm mt-2 ml-2 flex items-center gap-1">
-                <X className="w-3 h-3" />
-                {errors.teamName.message}
-              </p>
-            )}
-          </div>
-
-          {/* Leader Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="group">
-              <label className="flex items-center gap-2 text-sm font-medium text-white/80 mb-3">
-                <User className="w-4 h-4" />
-                Team Leader
-              </label>
-              <div className="relative">
-                <input
-                  {...register("leaderName")}
-                  className="w-full px-6 py-4 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl focus:outline-none focus:border-red-500 focus:bg-[#08000a]/90 transition-all duration-300 placeholder:text-white/40 text-white"
-                  placeholder="Your full name"
-                />
-                <div className="absolute inset-0 rounded-xl bg-red-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-              </div>
-              {errors.leaderName && (
-                <p className="text-red-400 text-sm mt-2 ml-2 flex items-center gap-1">
-                  <X className="w-3 h-3" />
-                  {errors.leaderName.message}
-                </p>
-              )}
-            </div>
-            <div className="group">
-              <label className="flex items-center gap-2 text-sm font-medium text-white/80 mb-3">
-                <Mail className="w-4 h-4" />
-                Email Address
-              </label>
-              <div className="relative">
-                <input
-                  {...register("leaderEmail")}
-                  type="email"
-                  className="w-full px-6 py-4 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl focus:outline-none focus:border-red-500 focus:bg-[#08000a]/90 transition-all duration-300 placeholder:text-white/40 text-white"
-                  placeholder="your@email.com"
-                />
-                <div className="absolute inset-0 rounded-xl bg-red-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-              </div>
-              {errors.leaderEmail && (
-                <p className="text-red-400 text-sm mt-2 ml-2 flex items-center gap-1">
-                  <X className="w-3 h-3" />
-                  {errors.leaderEmail.message}
-                </p>
-              )}
-            </div>
-            <div className="group">
-              <label className="flex items-center gap-2 text-sm font-medium text-white/80 mb-3">
-                <Mail className="w-4 h-4" />
-                Phone Number
-              </label>
-              <div className="relative">
-                <input
-                  {...register("leaderPhone")}
-                  type="tel"
-                  className="w-full px-6 py-4 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl focus:outline-none focus:border-red-500 focus:bg-[#08000a]/90 transition-all duration-300 placeholder:text-white/40 text-white"
-                  placeholder="+1234567890"
-                />
-                <div className="absolute inset-0 rounded-xl bg-red-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-              </div>
-              {errors.leaderPhone && (
-                <p className="text-red-400 text-sm mt-2 ml-2 flex items-center gap-1">
-                  <X className="w-3 h-3" />
-                  {errors.leaderPhone.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Team Members */}
-          <div className="space-y-6">
-            <label className="flex items-center gap-2 text-sm font-medium text-white/80">
-              <Users className="w-4 h-4" />
-              Team Members
-            </label>
-            <div className="space-y-6">
-              {members.map((member, index) => (
-                <div key={index} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative group">
-                      <input
-                        value={member.name || ''}
-                        onChange={(e) => handleMemberChange(index, 'name', e.target.value)}
-                        className="w-full px-6 py-4 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl focus:outline-none focus:border-red-500 focus:bg-[#08000a]/90 transition-all duration-300 placeholder:text-white/40 text-white"
-                        placeholder={`Member ${index + 2} name`}
-                      />
-                      <div className="absolute inset-0 rounded-xl bg-red-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                    </div>
-                    <div className="relative group">
-                      <input
-                        value={member.email || ''}
-                        onChange={(e) => handleMemberChange(index, 'email', e.target.value)}
-                        type="email"
-                        className="w-full px-6 py-4 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl focus:outline-none focus:border-red-500 focus:bg-[#08000a]/90 transition-all duration-300 placeholder:text-white/40 text-white"
-                        placeholder={`Member ${index + 2} email`}
-                      />
-                      <div className="absolute inset-0 rounded-xl bg-red-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                    </div>
-                    <div className="relative group flex gap-3">
-                      <div className="relative flex-1 group">
-                        <input
-                          value={member.phone || ''}
-                          onChange={(e) => handleMemberChange(index, 'phone', e.target.value)}
-                          type="tel"
-                          className="w-full px-6 py-4 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl focus:outline-none focus:border-red-500 focus:bg-[#08000a]/90 transition-all duration-300 placeholder:text-white/40 text-white"
-                          placeholder={`Member ${index + 2} phone`}
-                        />
-                        <div className="absolute inset-0 rounded-xl bg-red-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                      </div>
-                      {members.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveMember(index)}
-                          className="px-4 border border-white/20 text-white/60 hover:border-red-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all duration-300"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {members.length < 3 && (
-              <button
-                type="button"
-                onClick={handleAddMember}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#08000a]/80 backdrop-blur-xl border border-red-600/10 rounded-xl text-sm font-medium text-white/90 hover:bg-red-600/20 hover:border-red-500 transition-all duration-300"
-              >
-                <Plus size={16} />
-                Add Member
-              </button>
-            )}
-          </div>
-
-          {/* PPT Upload */}
-          <div className="space-y-4">
-            <label className="flex items-center gap-2 text-sm font-medium text-white/80">
-              <Upload className="w-4 h-4" />
-              Presentation (Optional)
-            </label>
-            <div className="relative group">
-              <div className="border-2 border-dashed border-red-600/20 rounded-xl p-12 text-center hover:border-red-500 transition-all duration-300 bg-[#08000a]/60 backdrop-blur-xl">
-                {pptUrl ? (
-                  <div className="space-y-4">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/20 text-green-400 rounded-2xl mb-3">
-                      <CheckCircle size={24} />
-                    </div>
-                    <div>
-                      <p className="text-white font-medium mb-1">File Uploaded Successfully</p>
-                      <p className="text-white/60 text-sm">{pptFile?.name}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPptFile(null);
-                        setPptUrl(null);
-                      }}
-                      className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
-                    >
-                      Remove File
-                    </button>
-                  </div>
-                ) : (
-                  <label className="cursor-pointer block">
-                    <input
-                      type="file"
-                      accept=".ppt,.pptx"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      disabled={isUploading}
-                    />
-                    <div className="space-y-4">
-                      {isUploading ? (
-                        <div className="flex flex-col items-center">
-                          <Loader2 className="animate-spin text-purple-400 mb-3" size={32} />
-                          <p className="text-white font-medium">Uploading...</p>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center">
-                          <div className="w-16 h-16 bg-purple-500/20 text-purple-400 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-purple-500/30 transition-colors">
-                            <Upload size={24} />
-                          </div>
-                          <div>
-                            <p className="text-white font-medium mb-1">Upload PPT</p>
-                            <p className="text-white/60 text-sm">PPT / PPTX up to 50MB</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </label>
-                )}
-              </div>
-              <div className="absolute inset-0 rounded-xl bg-red-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={isSubmitting || isUploading}
-              className="w-full h-14 bg-red-600 hover:bg-red-500 text-white font-bold uppercase tracking-[0.2em] rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-red-500/30 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-3 text-lg"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="animate-spin" size={20} />
-                  Registering...
-                </>
-              ) : (
-                <>
-                  <Zap className="w-5 h-5" />
-                  Submit Application
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Auto-save indicator */}
-          <div className="h-6 flex items-center justify-center">
-            {autoSaveStatus && (
-              <div className="flex items-center gap-2 text-xs font-medium text-white/60 animate-pulse">
-                <div className="w-2 h-2 bg-green-400 rounded-full" />
-                Draft saved locally
-              </div>
-            )}
-          </div>
-        </form>
-
-        {/* Footer */}
-        <div className="mt-16 text-center">
-          <p className="text-white/60 text-sm">
-            Already have a team?{" "}
-            <Link href="/login" className="text-red-400 hover:text-red-300 font-medium transition-colors">
-              Sign in here
-            </Link>
-          </p>
-        </div>
+        {/* Grain Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
-      {/* Custom Styles */}
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.2;
-          }
-          50% {
-            opacity: 0.3;
-          }
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-16">
+        {/* Header Navigation */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-12"
+        >
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:border-red-500/50 transition-all duration-300"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-medium tracking-tight text-white/70">
+              Return to Portal
+            </span>
+          </Link>
+        </motion.div>
+
+        {/* Title Section */}
+        <div className="mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <h1 className="text-5xl md:text-8xl font-black  tracking-tighter italic text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/40 leading-none">
+              {REGISTRATION_TITLE}
+            </h1>
+          </motion.div>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-12">
+          {message && (
+            <div
+              className={`rounded-2xl border px-4 py-3 text-sm font-medium ${
+                message.type === "success"
+                  ? "border-green-500/40 bg-green-500/10 text-green-300"
+                  : "border-red-500/40 bg-red-500/10 text-red-300"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+
+          {/* Section 1: Team Core */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center">
+                <Users className="w-4 h-4" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight ">
+                Formation Protocol
+              </h2>
+              <div className="h-px flex-1 bg-gradient-to-r from-white/20 to-transparent" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2 group">
+                <label className="text-xs  tracking-widest text-white/40 font-bold ml-2">
+                  Team Name
+                </label>
+                <div className="relative">
+                  <input
+                    {...register("teamName")}
+                    placeholder="Enter Team Name"
+                    className="w-full h-14 bg-white/5 border border-white/10 rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all placeholder:text-white/20"
+                  />
+                  {errors.teamName && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-red-400 text-xs mt-1 ml-2 font-medium italic"
+                    >
+                      {errors.teamName.message}
+                    </motion.p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs  tracking-widest text-white/40 font-bold ml-2">
+                  Lead
+                </label>
+                <input
+                  {...register("leaderName")}
+                  placeholder="Lead Name"
+                  className="w-full h-14 bg-white/5 border border-white/10 rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all placeholder:text-white/20"
+                />
+                {errors.leaderName && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-red-400 text-xs mt-1 ml-2 font-medium italic"
+                  >
+                    {errors.leaderName.message}
+                  </motion.p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="relative space-y-2">
+                <label className="text-xs  tracking-widest text-white/40 font-bold ml-2">
+                  {" "}
+                  Email
+                </label>
+                <div className="flex">
+                  <span className="h-14 w-12 flex items-center justify-center bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/30">
+                    <Mail className="w-4 h-4" />
+                  </span>
+                  <input
+                    {...register("leaderEmail")}
+                    placeholder="email@nexus.com"
+                    className="flex-1 h-14 bg-white/5 border border-white/10 rounded-r-xl px-4 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all placeholder:text-white/20"
+                  />
+                </div>
+                {errors.leaderEmail && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-red-400 text-xs mt-1 ml-2 font-medium italic"
+                  >
+                    {errors.leaderEmail.message}
+                  </motion.p>
+                )}
+              </div>
+
+              <div className="relative space-y-2">
+                <label className="text-xs  tracking-widest text-white/40 font-bold ml-2">
+                  Phone
+                </label>
+                <div className="flex">
+                  <span className="h-14 w-12 flex items-center justify-center bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/30">
+                    <Smartphone className="w-4 h-4" />
+                  </span>
+                  <input
+                    {...register("leaderPhone")}
+                    placeholder="+91 ...."
+                    className="flex-1 h-14 bg-white/5 border border-white/10 rounded-r-xl px-4 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all placeholder:text-white/20"
+                  />
+                </div>
+                {errors.leaderPhone && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-red-400 text-xs mt-1 ml-2 font-medium italic"
+                  >
+                    {errors.leaderPhone.message}
+                  </motion.p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Crew Members */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                <Plus className="w-4 h-4" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight ">
+                Reinforcements
+              </h2>
+              <span className="text-xs text-white/30 font-mono">
+                [{members.length}/3 MAX]
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-r from-white/20 to-transparent" />
+            </div>
+
+            <div className="space-y-4">
+              {errors.members?.message && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-red-400 text-xs ml-2 font-medium italic"
+                >
+                  {errors.members.message}
+                </motion.p>
+              )}
+              <AnimatePresence mode="popLayout">
+                {members.map((m, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="group relative grid grid-cols-1 md:grid-cols-10 gap-4 p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-colors"
+                  >
+                    <div className="md:col-span-3 space-y-1">
+                      <label className="text-[14px]  font-bold text-white/30 ml-1">
+                        Name
+                      </label>
+                      <input
+                        value={m.name}
+                        onChange={(e) =>
+                          handleMemberChange(i, "name", e.target.value)
+                        }
+                        placeholder="Name"
+                        className="w-full bg-transparent border-b border-white/10 focus:border-red-500 outline-none py-1 text-sm placeholder:text-white/10 transition-colors"
+                      />
+                      {errors.members?.[i]?.name && (
+                        <p className="text-red-400 text-[11px] font-medium italic">
+                          {errors.members[i]?.name?.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="md:col-span-3 space-y-1">
+                      <label className="text-[14px]  font-bold text-white/30 ml-1">
+                        Email
+                      </label>
+                      <input
+                        value={m.email}
+                        onChange={(e) =>
+                          handleMemberChange(i, "email", e.target.value)
+                        }
+                        placeholder="Email"
+                        className="w-full bg-transparent border-b border-white/10 focus:border-red-500 outline-none py-1 text-sm placeholder:text-white/10 transition-colors"
+                      />
+                      {errors.members?.[i]?.email && (
+                        <p className="text-red-400 text-[11px] font-medium italic">
+                          {errors.members[i]?.email?.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="md:col-span-3 space-y-1">
+                      <label className="text-[14px]  font-bold text-white/30 ml-1">
+                        Phone
+                      </label>
+                      <input
+                        value={m.phone}
+                        onChange={(e) =>
+                          handleMemberChange(i, "phone", e.target.value)
+                        }
+                        placeholder="Phone"
+                        className="w-full bg-transparent border-b border-white/10 focus:border-red-500 outline-none py-1 text-sm placeholder:text-white/10 transition-colors"
+                      />
+                      {errors.members?.[i]?.phone && (
+                        <p className="text-red-400 text-[11px] font-medium italic">
+                          {errors.members[i]?.phone?.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="md:col-span-1 flex items-end justify-center">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMember(i)}
+                        className="p-2 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {members.length < 3 && (
+                <button
+                  type="button"
+                  onClick={handleAddMember}
+                  className="w-full py-4 rounded-2xl border border-dashed border-white/10 hover:border-red-500/50 hover:bg-red-500/5 transition-all text-white/40 hover:text-white flex items-center justify-center gap-2 group"
+                >
+                  <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                  <span className="font-bold  tracking-widest text-xs">
+                    Request Reinforcement
+                  </span>
+                </button>
+              )}
+            </div>
+          </section>
+
+          {/* Section 3: Data Core */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                <Upload className="w-4 h-4" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight ">
+                Strategic Asset Link
+              </h2>
+              <div className="h-px flex-1 bg-gradient-to-r from-white/20 to-transparent" />
+            </div>
+
+            <div className="p-8 rounded-3xl bg-gradient-to-br from-white/[0.05] to-transparent border border-white/10 space-y-4">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-red-600/20 rounded-xl">
+                  <Globe className="w-6 h-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">Google Drive Deployment</h3>
+                  <p className="text-white/40 text-sm">
+                    Upload your Team PPTs to a public Drive folder and paste the
+                    link below.
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <input
+                  {...register("driveLink")}
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  className="w-full h-16 bg-black/40 border border-white/20 rounded-2xl px-6 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all text-red-100 placeholder:text-white/10 font-mono text-sm"
+                />
+                <div className="absolute top-1/2 -translate-y-1/2 right-6 pointer-events-none opacity-20 group-focus-within:opacity-100 group-focus-within:text-red-500 transition-all">
+                  <Star className="w-5 h-5" />
+                </div>
+              </div>
+              {errors.driveLink && (
+                <p className="text-red-400 text-xs mt-2 ml-2 font-medium italic">
+                  {errors.driveLink.message}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Footer Actions */}
+          <div className="pt-10 space-y-6">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="relative w-full overflow-hidden group py-3 rounded-2xl bg-white text-black font-black  tracking-[0.2em] italic hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:scale-100"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-400 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-out" />
+              <div className="relative z-10 flex items-center justify-center gap-3">
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span className="group-hover:text-white transition-colors">
+                      Transmitting...
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-6 h-6 group-hover:text-white transition-colors" />
+                    <span className="group-hover:text-white transition-colors">
+                      Register
+                    </span>
+                  </>
+                )}
+              </div>
+            </button>
+
+            <div className="flex flex-col md:flex-row items-center justify-between px-4">
+              <div className="flex items-center gap-2 mb-4 md:mb-0">
+                <div
+                  className={`w-2 h-2 rounded-full ${autoSaveStatus ? "bg-green-500 animate-pulse" : "bg-white/20"}`}
+                />
+                <p className="text-[14px]  tracking-widest font-bold text-white/30">
+                  {autoSaveStatus || "Data Encryption Idle"}
+                </p>
+              </div>
+
+              <p className="text-[14px]  tracking-widest font-bold text-white/20">
+                Authorized access only // SuperNova Network 2026
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <style jsx global>{`
+        ::-webkit-scrollbar {
+          width: 6px;
         }
-        .animation-delay-2000 {
-          animation-delay: 2s;
+        ::-webkit-scrollbar-track {
+          background: #020202;
         }
-        .animation-delay-4000 {
-          animation-delay: 4s;
+        ::-webkit-scrollbar-thumb {
+          background: #222;
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #444;
         }
       `}</style>
     </div>

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/lib/mail";
-import { generateMagicToken } from "@/lib/auth";
-import { HACKATHON_EVENT_NAME, SUBJECT_APPLICATION_RECEIVED, getAppUrl } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,8 +27,6 @@ export async function POST(req: NextRequest) {
     });
     
     let team;
-    const magicToken = generateMagicToken();
-    const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
     
     if (existingTeam) {
       // Update existing team
@@ -43,8 +38,6 @@ export async function POST(req: NextRequest) {
           leaderEmail,
           leaderPhone,
           pptUrl: pptUrl || existingTeam.pptUrl,
-          magicToken,
-          tokenExpiry,
           members: {
             deleteMany: {},
             create: members.map((member: {name: string; email: string; phone: string}) => ({ 
@@ -65,8 +58,6 @@ export async function POST(req: NextRequest) {
           leaderEmail,
           leaderPhone,
           pptUrl,
-          magicToken,
-          tokenExpiry,
           members: {
             create: members.map((member: {name: string; email: string; phone: string}) => ({ 
               name: member.name,
@@ -79,40 +70,6 @@ export async function POST(req: NextRequest) {
       });
     }
     
-    // Send magic link email
-    const appUrl = getAppUrl();
-    const magicLink = `${appUrl}/verify?token=${magicToken}`;
-    
-    try {
-      await sendEmail({
-        to: leaderEmail,
-        subject: SUBJECT_APPLICATION_RECEIVED,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 40px; color: #111827;">
-            <h2 style="color: #dc2626; font-size: 24px; margin-bottom: 16px;">Application Received!</h2>
-            <p style="font-size: 16px; line-height: 1.5;">Hi ${leaderName},</p>
-            <p style="font-size: 16px; line-height: 1.5;">Thank you for registering your team <strong>${teamName}</strong> for the ${HACKATHON_EVENT_NAME}.</p>
-            
-            <div style="background: #fef2f2; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px solid #fee2e2;">
-              <p style="margin: 0; color: #991b1b; font-weight: 500;">Status: Under Review</p>
-              <p style="margin: 8px 0 0; color: #7f1d1d; font-size: 14px;">Our team is currently reviewing your application. You will receive an email if your team is selected for the next round.</p>
-            </div>
-
-            <p style="font-size: 14px; color: #6b7280;">No further action is required from your side at this moment.</p>
-
-            <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
-            <p style="color: #6b7280; font-size: 12px; text-align: center;">
-              ${HACKATHON_EVENT_NAME}<br>
-              April 29-30, 2026
-            </p>
-          </div>
-        `,
-      });
-    } catch (emailError) {
-      console.error("Failed to send email:", emailError);
-      // Continue even if email fails - we can resend later
-    }
-    
     return NextResponse.json({
       success: true,
       team: {
@@ -121,7 +78,7 @@ export async function POST(req: NextRequest) {
         leaderEmail: team.leaderEmail,
         status: team.status,
       },
-      message: "Registration successful! Check your email for the magic link.",
+      message: "Registration successful! Wait for selection and credentials from admin.",
     });
     
   } catch (error) {

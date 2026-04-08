@@ -13,23 +13,25 @@ export async function GET(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    const { verifyTeamToken } = await import("@/lib/auth");
+    const payload = await verifyTeamToken(token);
     
-    const team = await prisma.team.findUnique({
-      where: { magicToken: token },
-      include: { members: true },
-    });
-    
-    if (!team) {
+    if (!payload) {
       return NextResponse.json(
         { error: "Invalid session" },
         { status: 401 }
       );
     }
     
-    // Check if token is expired
-    if (team.tokenExpiry && new Date() > team.tokenExpiry) {
+    const team = await prisma.team.findUnique({
+      where: { id: payload.teamId },
+      include: { members: true },
+    });
+    
+    if (!team) {
       return NextResponse.json(
-        { error: "Session expired" },
+        { error: "Team not found" },
         { status: 401 }
       );
     }

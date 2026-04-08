@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import { existsSync, mkdirSync } from "fs";
-import { join } from "path";
-import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
-
-const UPLOAD_DIR = join(process.cwd(), "public", "uploads", "payments");
-
-if (!existsSync(UPLOAD_DIR)) {
-  mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+import { verifyTeamToken } from "@/lib/auth";
+import { imagekit } from "@/lib/imagekit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +10,14 @@ export async function POST(req: NextRequest) {
     const token = cookieStore.get("team_token")?.value;
     
     if (!token) {
+      console.warn("Upload attempt without team_token");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const teamData = await verifyTeamToken(token);
+    if (!teamData) {
+      console.warn("Invalid team_token during upload");
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
     const formData = await req.formData();
@@ -28,21 +27,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Generate unique filename
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const fileName = `${randomUUID()}.${ext}`;
-    const filePath = join(UPLOAD_DIR, fileName);
-
-    // Save file
+    // Convert file to buffer for ImageKit
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
 
-    const fileUrl = `/uploads/payments/${fileName}`;
+    // Upload to ImageKit
+    const uploadResponse = await imagekit.upload({
+      file: buffer,
+      fileName: `proof_${teamData.teamId}_${Date.now()}`,
+      folder: "/payments",
+      useUniqueFileName: true,
+    });
+
+    const fileUrl = uploadResponse.url;
 
     // Update DB
     await prisma.team.update({
-      where: { magicToken: token },
+      where: { id: teamData.teamId },
       data: { paymentProof: fileUrl },
     });
 
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
       url: fileUrl,
     });
   } catch (error) {
-    console.error("Proof upload error:", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    console.error("ImageKit Proof upload error:", error);
+    return NextResponse.json({ error: "Upload failed via ImageKit" }, { status: 500 });
   }
 }

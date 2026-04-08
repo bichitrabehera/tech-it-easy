@@ -5,9 +5,8 @@ export const HACKATHON_EVENT_NAME = `${HACKATHON_TITLE} Hackathon`;
 
 export const DEFAULT_APP_URL = "http://localhost:3000";
 
-export const PAYMENT_AMOUNT_INR = 500;
+export const PAYMENT_AMOUNT_INR = 1000;
 export const PAYMENT_UPI_ID = "bichitrabehera.345@okhdfcbank";
-export const DEFAULT_RAZORPAY_PAYMENT_URL = "https://rzp.io/rzp/RsKB1r3B";
 
 export const REGISTRATION_TITLE = "Register your team";
 export const REGISTRATION_SUBTITLE = "One form, one PPT, one submission.";
@@ -29,13 +28,13 @@ export const SUBJECT_PAYMENT_CONFIRMED = `Payment confirmed - dashboard access f
 export const REGISTRATION_STEPS = [
   "Fill complete team details with PPT",
   "Submit application for review",
-  "Wait for email with magic link",
+  "Wait for selection and credentials",
 ];
 
 export const PAYMENT_STEPS = [
-  "Admin confirms payment proof",
-  "Receive magic link via email",
-  "Access dashboard instantly",
+  "Pay using provided UPI details",
+  "Upload payment proof screenshot",
+  "Admin confirms and enables dashboard",
 ];
 
 export const STATUS_MESSAGES = {

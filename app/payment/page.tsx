@@ -19,7 +19,6 @@ export default function PaymentPage() {
   const [team, setTeam] = useState<Team | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [isCreatingLink, setIsCreatingLink] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
@@ -118,30 +117,9 @@ export default function PaymentPage() {
     }
   };
 
-  const handlePayNow = async () => {
-    if (isCreatingLink) return;
-
-    setIsCreatingLink(true);
-    setMessage(null);
-
-    try {
-      const response = await fetch("/api/payment/create-link", {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.paymentUrl) {
-        setMessage({ type: "error", text: data.error || "Unable to create payment link" });
-        return;
-      }
-
-      window.location.href = data.paymentUrl;
-    } catch {
-      setMessage({ type: "error", text: "Unable to create payment link" });
-    } finally {
-      setIsCreatingLink(false);
-    }
+  const handlePayNow = () => {
+    const upiUrl = `upi://pay?pa=${encodeURIComponent(PAYMENT_UPI_ID)}&pn=${encodeURIComponent(team?.teamName || "SuperNova")}&am=${PAYMENT_AMOUNT_INR}&cu=INR`;
+    window.location.href = upiUrl;
   };
 
   if (isLoading) {
@@ -204,7 +182,7 @@ export default function PaymentPage() {
 
               <div className="space-y-4 text-sm text-slate-400 leading-relaxed">
                 <p>Team <span className="text-white font-semibold">{team.teamName}</span> is selected. Tap the payment button, pay once, and you are done.</p>
-                <p>When Razorpay confirms the payment, your dashboard opens automatically.</p>
+                <p>After payment, upload proof below. Admin verifies and then dashboard access is enabled.</p>
               </div>
             </div>
 
@@ -236,8 +214,8 @@ export default function PaymentPage() {
                   }}
                   className="inline-flex items-center justify-center gap-3 px-5 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
                 >
-                  {isCreatingLink ? "Creating link..." : "Pay now"}
-                  {isCreatingLink ? <Loader2 size={14} className="animate-spin" /> : <ExternalLink size={14} />}
+                  Pay now (UPI)
+                  <ExternalLink size={14} />
                 </a>
               </div>
             </div>
@@ -304,8 +282,8 @@ export default function PaymentPage() {
               </div>
               <ol className="space-y-3 text-sm text-slate-400 list-decimal list-inside">
                 <li>Pay once using the button above.</li>
-                <li>Razorpay confirms payment automatically.</li>
-                <li>You move to the dashboard after confirmation.</li>
+                <li>Upload payment proof screenshot.</li>
+                <li>Admin confirms and then you move to dashboard.</li>
               </ol>
             </div>
           </section>

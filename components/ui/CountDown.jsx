@@ -179,7 +179,7 @@ const IronCountdown = ({
 const StyledWrapper = styled.div`
   .sp-wrap {
     position: relative;
-    background: #0a0a0f;
+    background: #000;
     border-radius: 5px;
     padding: 40px 24px 32px;
     overflow: hidden;
@@ -265,8 +265,7 @@ const StyledWrapper = styled.div`
   }
 
   .sp-num {
-    font-family: "Bebas Neue", "Impact", sans-serif;
-    font-size: clamp(35px, 6vw, 56px);
+    font-size: 30px;
     color: #fff;
     line-height: 1;
     letter-spacing: 0.02em;
