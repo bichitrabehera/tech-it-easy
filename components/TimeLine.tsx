@@ -25,7 +25,7 @@ const PORTAL_SPARKLES = [
 
 const TIMELINE_DATA: TimelineDay[] = [
   {
-    day: "Day 1 — Origin Begins",
+    day: "Day 1 — Origin Begins (29th)",
     events: [
       {
         time: "08:30 AM",
@@ -55,7 +55,7 @@ const TIMELINE_DATA: TimelineDay[] = [
     ],
   },
   {
-    day: "Day 2 — Final Battle",
+    day: "Day 2 — Final Battle(30th)",
     events: [
       {
         time: "08:00 AM",
@@ -96,6 +96,7 @@ const TimeLine = () => {
   return (
     <section
       ref={containerRef}
+      id="timeline"
       className="relative bg-[#050005] py-32 px-4 overflow-hidden"
     >
       {/* Background Grid & Vignette (Mystical Purple/Orange) */}
@@ -110,9 +111,7 @@ const TimeLine = () => {
           <div className="absolute inset-0 border-4 border-dashed border-orange-500 rounded-full animate-[spin_10s_linear_infinite] opacity-40" />
           <div className="absolute inset-0 border-4 border-dotted border-gold-500 rounded-full animate-[spin_15s_linear_infinite_reverse] opacity-30" />
 
-          {/* Inner Glow Portal */}
-          <div className="absolute inset-4 bg-gradient-to-r from-orange-600 via-yellow-500 to-orange-600 rounded-full blur-2xl opacity-20 animate-pulse" />
-          <div className="absolute inset-10 bg-black/40 backdrop-blur-sm rounded-full border border-orange-500/50 shadow-[0_0_50px_rgba(245,158,11,0.4)]" />
+     
 
           {/* Dr Strange */}
           <Image

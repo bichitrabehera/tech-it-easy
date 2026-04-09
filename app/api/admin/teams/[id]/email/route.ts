@@ -47,6 +47,21 @@ export async function POST(
     let html = "";
 
     if (type === "selected") {
+      // Backfill password for legacy/testing records before composing selected email.
+      if (!team.password) {
+        const characters = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+        let randomPassword = "";
+        for (let i = 0; i < 10; i++) {
+          randomPassword += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+
+        const updatedTeam = await prisma.team.update({
+          where: { id: team.id },
+          data: { password: randomPassword },
+        });
+        team.password = updatedTeam.password;
+      }
+
       const upiUri = `upi://pay?pa=${PAYMENT_UPI_ID}&pn=${encodeURIComponent(HACKATHON_EVENT_NAME)}&am=${PAYMENT_AMOUNT_INR}&cu=INR`;
       const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUri)}`;
 

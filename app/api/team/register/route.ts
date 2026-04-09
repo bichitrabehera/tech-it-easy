@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     
     const members = membersJson ? JSON.parse(membersJson) : [];
     
-    // Check if email already exists (prevent duplicates - update instead of create)
+    // Check if email already exists (testing flow: overwrite and reset state)
     const existingTeam = await prisma.team.findUnique({
       where: { leaderEmail },
     });
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     let team;
     
     if (existingTeam) {
-      // Update existing team
+      // Update existing team and reset all review/post-selection fields.
       team = await prisma.team.update({
         where: { id: existingTeam.id },
         data: {
@@ -38,6 +38,16 @@ export async function POST(req: NextRequest) {
           leaderEmail,
           leaderPhone,
           pptUrl: pptUrl || existingTeam.pptUrl,
+          status: "PENDING",
+          paymentStatus: "UNPAID",
+          paymentProof: null,
+          password: null,
+          githubId: null,
+          githubRepo: null,
+          idProofUrl: null,
+          paymentLink: null,
+          magicToken: null,
+          tokenExpiry: null,
           members: {
             deleteMany: {},
             create: members.map((member: {name: string; email: string; phone: string}) => ({ 

@@ -21,7 +21,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex flex-col  items-center justify-center overflow-hidden bg-[#0a0000] text-white py-10"
+      className="relative min-h-screen flex flex-col  items-center justify-center overflow-hidden bg-[#0a0000] text-white md:py-10 py-20"
     >
       {/* BACKGROUND GRADIENTS */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#1b0303] via-[#0a0000] to-black z-0" />

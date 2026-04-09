@@ -10,9 +10,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const FROM_EMAIL = process.env.FROM_EMAIL || "no-reply@supernova.com";
+export const FROM_EMAIL = process.env.FROM_EMAIL
+const EMAILS_DISABLED = process.env.DISABLE_EMAILS === "true";
 
 export const sendEmail = async ({ to, subject, html }: { to: string; subject: string; html: string }) => {
+  if (EMAILS_DISABLED) {
+    console.log(`[mail] Skipped email (DISABLE_EMAILS/NON_PROD): to=${to}, subject=${subject}`);
+    return { success: true, messageId: "disabled-in-testing" };
+  }
+
   try {
     const info = await transporter.sendMail({
       from: FROM_EMAIL,
